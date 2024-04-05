@@ -22,7 +22,14 @@ def generate_wikidata_search_query(taxon_id: str, limit: int, language: str = 'e
     return query_string
 
 
-def submit_query(query_string: str, out_csv: str):
+def submit_query(query_string: str, out_csv: str, query_limit: int):
+    """
+    :param query_string: A string containing the SPARQL query to be submitted.
+    :param out_csv: The name of the output CSV file where the query results will be saved.
+    :param query_limit: An integer specifying the maximum number of results to retrieve from the query.
+
+    :return: None
+    """
     time.sleep(5)  # Rate limiting
     # Define the SPARQL endpoint URL
     endpoint_url = "https://query.wikidata.org/sparql"
@@ -51,9 +58,13 @@ def submit_query(query_string: str, out_csv: str):
             if '.value' in c:
                 rename_dict[c] = c.replace('.value', '')
         df = df.rename(columns=rename_dict)
+
+        if len(df) == query_limit:
+            print(f'WARNING: Wikidata query returned {len(df)}, which is equal to query limit. To obtain all data, rerun with higher limit.')
+
         df.to_csv(out_csv)
     else:
-        print("Error:", response.status_code)
+        raise ValueError("Wikidata response error. Code:", response.status_code)
 
 
 def tidy_wikidata_output(wikidata_results_csv: str, output_csv: str, wcvp_version_number: str = None):
@@ -95,5 +106,5 @@ def tidy_wikidata_output(wikidata_results_csv: str, output_csv: str, wcvp_versio
 if __name__ == '__main__':
     # Example usage
     my_query = generate_wikidata_search_query('Q1073514', 10)
-    submit_query(my_query, 'wikidata_search.csv')
+    submit_query(my_query, 'wikidata_search.csv',10)
     tidy_wikidata_output('wikidata_search.csv', 'example_output.csv')

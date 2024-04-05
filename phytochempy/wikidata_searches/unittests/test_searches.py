@@ -26,7 +26,7 @@ class TestTidyWikidataOutput(unittest.TestCase):
 
     def test_querying(self):
         my_query = generate_wikidata_search_query('Q1073514', 10)
-        submit_query(my_query, 'wikidata_search.csv')
+        submit_query(my_query, 'wikidata_search.csv',10)
 
         output_df = pd.read_csv('wikidata_search.csv', index_col=0)
         correct_df = pd.read_csv(self.manual_test_query)
