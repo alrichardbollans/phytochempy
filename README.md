@@ -2,6 +2,12 @@
 
 A repository for analysing chemical diversity in vascular plants.
 
+## Installation
+
+With pip, run:
+
+`pip install git+https://github.com/alrichardbollans/phytochempy.git@1.0`
+
 ## References
 
 When using this package, please cite the appropriate data sources. These are detailed below.
