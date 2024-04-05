@@ -42,16 +42,16 @@ def get_classyfire_classes_from_query(query_id: str):
     return result
 
 
-def get_classyfire_classes_from_smiles(smiles: List[str], tempout_dir: str = None):
+def get_classyfire_classes_from_smiles(smiles: List[str], classyfire_cache_dir: str = None):
     unique_smiles = list(set(smiles))
-
+    temp_file_tag = 'classyfireinfo_cache_salt_'
     # First save time by reading previous temp outputs
     existing_df = None
-    if tempout_dir is not None:
+    if classyfire_cache_dir is not None:
         existing_info = []
-        for temp_cl_file in os.listdir(tempout_dir):
-            if temp_cl_file.startswith('classyfireinfo_'):
-                existing_info.append(pd.read_csv(os.path.join(tempout_dir, temp_cl_file), index_col=0))
+        for temp_cl_file in os.listdir(classyfire_cache_dir):
+            if temp_cl_file.startswith(temp_file_tag):
+                existing_info.append(pd.read_csv(os.path.join(classyfire_cache_dir, temp_cl_file), index_col=0))
         if len(existing_info) > 0:
             existing_df = pd.concat(existing_info)
 
@@ -120,9 +120,9 @@ def get_classyfire_classes_from_smiles(smiles: List[str], tempout_dir: str = Non
         out_df['original_SMILES'] = unique_smiles
         out_df = out_df[['original_SMILES', 'classyfire_SMILES'] + [c for c in out_df.columns if c not in ['original_SMILES', 'classyfire_SMILES']]]
 
-    if tempout_dir is not None:
+    if classyfire_cache_dir is not None:
         if len(out_df.index) > 0:
-            out_df.to_csv(os.path.join(tempout_dir, 'classyfireinfo_' + str(uuid.uuid4()) + '.csv'))
+            out_df.to_csv(os.path.join(classyfire_cache_dir, temp_file_tag + str(uuid.uuid4()) + '.csv'))
         if existing_df is not None:
             out_df = pd.concat([out_df, existing_df])
 

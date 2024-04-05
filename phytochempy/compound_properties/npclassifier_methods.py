@@ -46,16 +46,17 @@ def npclassify_smiles(smiles: str) -> dict:
         return None
 
 
-def get_npclassif_classes_from_smiles(smiles: List[str], tempout_dir: str = None):
+def get_npclassif_classes_from_smiles(smiles: List[str], npclassifier_cache_dir: str = None):
     unique_smiles = list(set(smiles))
 
     # First save time by reading previous temp outputs
+    temp_file_tag = 'npclassifierinfo_cache_salt_'
     existing_df = None
-    if tempout_dir is not None:
+    if npclassifier_cache_dir is not None:
         existing_info = []
-        for temp_cl_file in os.listdir(tempout_dir):
-            if temp_cl_file.startswith('npclassifierinfo_'):
-                existing_info.append(pd.read_csv(os.path.join(tempout_dir, temp_cl_file), index_col=0))
+        for temp_cl_file in os.listdir(npclassifier_cache_dir):
+            if temp_cl_file.startswith(temp_file_tag):
+                existing_info.append(pd.read_csv(os.path.join(npclassifier_cache_dir, temp_cl_file), index_col=0))
         if len(existing_info) > 0:
             existing_df = pd.concat(existing_info)
 
@@ -74,9 +75,9 @@ def get_npclassif_classes_from_smiles(smiles: List[str], tempout_dir: str = None
             ent_df = pd.DataFrame(result, index=[0])
             out_df = pd.concat([out_df, ent_df])
 
-    if tempout_dir is not None:
+    if npclassifier_cache_dir is not None:
         if len(out_df.index) > 0:
-            out_df.to_csv(os.path.join(tempout_dir, 'npclassifierinfo_' + str(uuid.uuid4()) + '.csv'))
+            out_df.to_csv(os.path.join(npclassifier_cache_dir, temp_file_tag + str(uuid.uuid4()) + '.csv'))
         if existing_df is not None:
             out_df = pd.concat([out_df, existing_df])
     out_df = out_df.sort_values(by='SMILES')
