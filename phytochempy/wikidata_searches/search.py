@@ -101,10 +101,3 @@ def tidy_wikidata_output(wikidata_results_csv: str, output_csv: str, wcvp_versio
     acc_df = acc_df.dropna(subset=wcvp_accepted_columns['name_w_author'])
     acc_df = acc_df.sort_values(by=wcvp_accepted_columns['name'])
     acc_df.to_csv(output_csv)
-
-
-if __name__ == '__main__':
-    # Example usage
-    my_query = generate_wikidata_search_query('Q1073514', 10)
-    submit_query(my_query, 'wikidata_search.csv',10)
-    tidy_wikidata_output('wikidata_search.csv', 'example_output.csv')

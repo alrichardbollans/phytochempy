@@ -134,12 +134,3 @@ def get_knapsack_formulas_for_compound(metabolite: str):
     except (KeyError, IndexError):
         print(f'Warning: No info found for {metabolite}')
         return []
-
-
-if __name__ == '__main__':
-    ## Example usage
-    fam = 'Gentianaceae'
-    temp_csv = 'knapsack_gentian.csv'
-    final_csv = 'knapsack_tidied_gentian.csv'
-    get_knapsack_compounds_in_family(fam, temp_csv)
-    tidy_knapsack_results(temp_csv, final_csv, fam,cirpy_cache_dir='temp_outputs')

@@ -12,6 +12,51 @@ When using this package, please cite the appropriate data sources. These are det
 
 ## Usage Examples
 
+The main methods help to retrieve organism-compound pairs from KNApSAcK and WikiData, and tidy the data by resolving plant names to the WCVP and also
+resolve chemical identifiers where possible.
+
+To download all relevant WikiData for a family, or group of families in the same order:
+
+```python
+families = ['Pandanaceae']
+wiki_data_id_for_order = 'Q736182'  # This is the ID for the order containing `families`
+temp_outputs_folder = 'temp'
+tidied_outputs_folder = 'tidied'
+import os
+from phytochempy.wikidata_searches import generate_wikidata_search_query, submit_query, tidy_wikidata_output
+
+my_query = generate_wikidata_search_query(wiki_data_id_for_order, limit=1000000)
+submit_query(my_query, os.path.join(temp_outputs_folder, 'wikidata.csv'), query_limit=1000000)
+tidy_wikidata_output(os.path.join(temp_outputs_folder, 'wikidata.csv'), os.path.join(tidied_outputs_folder, 'wikidata.csv'))
+
+```
+
+Similarly, to get KNApSAcK data for a set of families:
+
+```python
+import os
+from phytochempy.data_compilation_utilities import get_knapsack_data
+
+get_knapsack_data(families, temp_outputs_folder, os.path.join(tidied_outputs_folder, 'knapsack_data.csv'))
+
+```
+
+Finally, to merge both datasets and resolve compound ids:
+
+```python
+from phytochempy.data_compilation_utilities import merge_and_tidy_compound_datasets
+import pandas as pd
+
+## Merge and tidy the data
+tidy_wiki_data = pd.read_csv(os.path.join(tidied_outputs_folder, 'wikidata.csv'), index_col=0)
+tidy_knapsack_data = pd.read_csv(os.path.join(tidied_outputs_folder, 'knapsack_data.csv'), index_col=0)
+all_compounds_in_taxa = merge_and_tidy_compound_datasets([tidy_wiki_data, tidy_knapsack_data],
+                                                         os.path.join(tidied_outputs_folder, 'merged_data.csv'))
+```
+
+These compound-organism data can then be further enriched in a variety of ways. See [readme.md](phytochempy%2Fcompound_properties%2Freadme.md) for
+some examples.
+
 ## References
 
 ### Compound-Organism Pairs

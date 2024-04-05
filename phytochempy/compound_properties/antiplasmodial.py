@@ -120,8 +120,3 @@ def add_chembl_apm_data_to_compound_df(compound_df: pd.DataFrame, assay_csv: str
     if output_csv is not None:
         compound_df.to_csv(output_csv)
     return compound_df
-
-
-if __name__ == '__main__':
-    ##Example usage
-    get_compound_info_from_chembl_apm_assays()
