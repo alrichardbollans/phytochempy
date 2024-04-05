@@ -1,9 +1,11 @@
+import os.path
 import unittest
 
 import numpy as np
 import pandas as pd
 
-from phytochempy.compound_properties import npclassify_smiles, get_npclassif_classes_from_smiles, get_npclassifier_classes_from_df
+from phytochempy.compound_properties import npclassify_smiles, get_npclassif_classes_from_smiles, get_npclassifier_classes_from_df, \
+    read_manual_npclassifier_input
 
 
 class TestNPClassifierMethods(unittest.TestCase):
@@ -91,6 +93,14 @@ class TestNPClassifierMethods(unittest.TestCase):
         df = df[result.columns.tolist()]
 
         pd.testing.assert_frame_equal(df, result)
+
+    def test_reading_manual_data(self):
+        result = read_manual_npclassifier_input(os.path.join('test_inputs', 'manual_test_results.tsv'))
+        correct = pd.read_csv(os.path.join('test_inputs', 'test_manual_input_correct.csv'))
+
+        result = result[correct.columns.tolist()]
+
+        pd.testing.assert_frame_equal(result,correct)
 
 
 if __name__ == '__main__':

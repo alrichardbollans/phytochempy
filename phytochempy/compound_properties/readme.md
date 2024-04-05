@@ -40,7 +40,8 @@ with_bioavailibility = add_bioavailability_info(with_chembl_data, os.path.join(t
 
 ## This step requires some manual input
 
-all_info = add_manual_info_files(with_bioavailibility, maip_output_file=os.path.join(tidied_outputs_folder, 'example_maip_file.csv'))
+all_info = add_manual_info_files(with_bioavailibility,
+                                 maip_output_file=os.path.join(tidied_outputs_folder, 'example_maip_file.csv'))
 
 ### Then tidy and output final dataset
 tidy_final_dataset(all_info, tidied_outputs_folder, os.path.join('outputs', 'all_taxa_compound_data.csv'), comp_id_column)

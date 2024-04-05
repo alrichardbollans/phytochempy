@@ -101,16 +101,8 @@ def add_bioavailability_info(df: pd.DataFrame, out_csv: str = None):
     return bio_av
 
 
-def get_manual_files_to_upload(df: pd.DataFrame, _temp_output_path):
+def get_manual_MAIP_to_upload(df: pd.DataFrame, _temp_output_path):
     ''' Example for data without, AFAIK, no API. This generates files to upload to obtain information'''
-
-    ### Get NPclassifier info
-    # https://gnps.ucsd.edu/ProteoSAFe/index.jsp?params=%7B%22workflow%22:%22NPCLASSIFIER%22%7D
-    # See: https://ccms-ucsd.github.io/GNPSDocumentation/api/#structure-natural-product-classifier-np-classifier
-    all_metabolites_to_send_to_npclassifier = df[['SMILES']].dropna().drop_duplicates(
-        keep='first')
-    all_metabolites_to_send_to_npclassifier.to_csv(
-        os.path.join(_temp_output_path, 'smiles_for_np_classifier.csv'))
 
     ### Get MAIP info
     # https://www.ebi.ac.uk/chembl/maip/
@@ -120,19 +112,9 @@ def get_manual_files_to_upload(df: pd.DataFrame, _temp_output_path):
     all_metabolites_to_send_to_maip.to_csv(os.path.join(_temp_output_path, 'smiles_for_MAIP.csv'))
 
 
-def add_manual_info_files(df: pd.DataFrame, npclassifier_output_file: str = None, maip_output_file: str = None):
+def add_manual_info_files(df: pd.DataFrame, maip_output_file: str = None):
     all_metabolites_with_info = df.copy(deep=True)
-    if npclassifier_output_file is not None:
-        ### Get NPclassifier info
-        np_classif_results = pd.read_csv(npclassifier_output_file,
-                                         sep='\t').drop_duplicates(keep='first')
-        rename_dict = {'smiles': 'SMILES'}
-        for c in np_classif_results.columns:
-            if c != 'smiles':
-                rename_dict[c] = 'NPclassif_' + c
-        np_classif_results = np_classif_results.rename(columns=rename_dict).dropna(subset='SMILES')
-        all_metabolites_with_info = pd.merge(all_metabolites_with_info, np_classif_results[~np_classif_results['SMILES'].isna()], how='left',
-                                             on='SMILES')
+
     if maip_output_file is not None:
         ### Get MAIP values
         maip_results = pd.read_csv(maip_output_file)
