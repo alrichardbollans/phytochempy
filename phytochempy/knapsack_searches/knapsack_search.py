@@ -7,7 +7,7 @@ from tqdm import tqdm
 from wcvp_download import wcvp_accepted_columns
 from wcvp_name_matching import get_accepted_info_from_names_in_column
 
-from phytochempy.compound_properties import resolve_cas_to_smiles, resolve_cas_to_inchikey, COMPOUND_NAME_COLUMN
+from phytochempy.compound_properties import resolve_cas_to_smiles, resolve_cas_to_inchikey, COMPOUND_NAME_COLUMN, add_CAS_ID_translations_to_df
 
 _KNAPSACK_organism_column = 'Organism'
 
@@ -81,9 +81,10 @@ def get_knapsack_compounds_in_family(family: str, temp_output_csv: str):
         raise ValueError
 
 
-def tidy_knapsack_results(knapsack_results_csv: str, output_csv: str, family: str, manual_resolution_csv: str = None,
+def tidy_knapsack_results(knapsack_results_csv: str, output_csv: str, family: str, cirpy_cache_dir: str = None, manual_resolution_csv: str = None,
                           wcvp_version_number: str = None, add_smiles_and_inchi: bool = True):
     """
+    :param cirpy_cache_dir: Temp directory for cirpy caches
     :param add_smiles_and_inchi:
     :param knapsack_results_csv: The file path of the CSV containing the raw knapsack results.
     :param output_csv: The file path of the CSV to save the tidied results to.
@@ -101,10 +102,7 @@ def tidy_knapsack_results(knapsack_results_csv: str, output_csv: str, family: st
                                                     manual_resolution_csv=manual_resolution_csv)
     acc_df = acc_df[acc_df[wcvp_accepted_columns['family']] == family]
     if add_smiles_and_inchi:
-        print('Getting SMILES from CAS ID')
-        acc_df['SMILES'] = acc_df['CAS ID'].fillna('').apply(resolve_cas_to_smiles)
-        print('Getting InChIKey from CAS ID')
-        acc_df['InChIKey'] = acc_df['CAS ID'].fillna('').apply(resolve_cas_to_inchikey)
+        acc_df = add_CAS_ID_translations_to_df(acc_df, 'CAS ID', cirpy_cache_dir)
     acc_df.to_csv(output_csv)
 
     return acc_df
@@ -143,4 +141,4 @@ if __name__ == '__main__':
     temp_csv = 'knapsack_gentian.csv'
     final_csv = 'knapsack_tidied_gentian.csv'
     get_knapsack_compounds_in_family(fam, temp_csv)
-    tidy_knapsack_results(temp_csv, final_csv, fam)
+    tidy_knapsack_results(temp_csv, final_csv, fam,cirpy_cache_dir='temp_outputs')

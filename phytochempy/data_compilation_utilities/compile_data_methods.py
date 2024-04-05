@@ -14,12 +14,11 @@ from phytochempy.wikidata_searches import generate_wikidata_search_query, submit
 def get_wikidata(wiki_data_id: str, temp_output_csv: str, tidied_output_csv: str, limit: int = 100000):
     # Example usage
     my_query = generate_wikidata_search_query(wiki_data_id, limit)
-    submit_query(my_query, temp_output_csv)
+    submit_query(my_query, temp_output_csv, limit)
     tidy_wikidata_output(temp_output_csv, tidied_output_csv)
 
 
-def get_knapsack_data(families_of_interest: list, temp_output_path: str, tidied_output_csv: str,add_smiles_and_inchi:bool=True):
-
+def get_knapsack_data(families_of_interest: list, temp_output_path: str, tidied_output_csv: str, add_smiles_and_inchi: bool = True):
     def _temp_out_for_fam(faml: str) -> str:
         return os.path.join(temp_output_path, faml + '_kn_search.csv')
 
@@ -28,7 +27,7 @@ def get_knapsack_data(families_of_interest: list, temp_output_path: str, tidied_
 
     for fam in families_of_interest:
         get_knapsack_compounds_in_family(fam, _temp_out_for_fam(fam))
-        tidy_knapsack_results(_temp_out_for_fam(fam), _temp_out_for_fam_Acc(fam), fam,
+        tidy_knapsack_results(_temp_out_for_fam(fam), _temp_out_for_fam_Acc(fam), fam, cirpy_cache_dir=temp_output_path,
                               add_smiles_and_inchi=add_smiles_and_inchi)
 
     all_kn_dfs = pd.DataFrame()
