@@ -7,7 +7,7 @@ from tqdm import tqdm
 from wcvp_download import wcvp_accepted_columns
 from wcvp_name_matching import get_accepted_info_from_names_in_column
 
-from phytochempy.compound_properties import resolve_cas_to_smiles, resolve_cas_to_inchikey, COMPOUND_NAME_COLUMN, add_CAS_ID_translations_to_df
+from phytochempy.compound_properties import COMPOUND_NAME_COLUMN, add_CAS_ID_translations_to_df
 
 _KNAPSACK_organism_column = 'Organism'
 
@@ -38,6 +38,7 @@ def get_knapsack_compounds_for_taxon(name: str):
 
 
 def get_knapsack_compounds_in_family(family: str, temp_output_csv: str):
+    # TODO: Add result caching?
     """
     :param family: The name of the family to search for metabolites.
     :param temp_output_csv: The path of the temporary output CSV file to save the results.

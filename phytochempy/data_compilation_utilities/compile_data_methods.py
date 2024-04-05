@@ -6,7 +6,8 @@ from wcvp_download import wcvp_accepted_columns
 from wcvp_name_matching import get_genus_from_full_name, output_record_col_names
 
 from phytochempy.compound_properties import get_classyfire_classes_from_df, get_compound_info_from_chembl_apm_assays, \
-    simplify_inchi_key, add_chembl_apm_data_to_compound_df, add_bioavailability_rules_to_df, COMPOUND_NAME_COLUMN, get_npclassifier_classes_from_df
+    simplify_inchi_key, add_chembl_apm_data_to_compound_df, add_bioavailability_rules_to_df, COMPOUND_NAME_COLUMN, get_npclassifier_classes_from_df, \
+    fill_match_ids
 from phytochempy.knapsack_searches import get_knapsack_compounds_in_family, tidy_knapsack_results
 from phytochempy.wikidata_searches import generate_wikidata_search_query, submit_query, tidy_wikidata_output
 
@@ -57,43 +58,9 @@ def merge_and_tidy_compound_datasets(datasets: list, output_csv: str):
                       col not in start_cols]]
 
     # Tidy final list
-    chem_id_cols = ['SMILES', 'InChIKey', 'CAS ID']
-    # Remove cases with no identifiers
-    all_metabolites_in_taxa = all_metabolites_in_taxa.dropna(subset=chem_id_cols, how='all')
 
-    ### Fill in matching details for compound ID columns from other dataframes
-    def fill_match_ids(given_col: str):
-        cols_to_do = [cl for cl in chem_id_cols if cl != given_col]
-        # Step 1: Create a mapping of cols_to_do[0] and cols_to_do[1] to 'SMILES' values for non-empty rows
-        mapping1 = {}
-        mapping2 = {}
-        for index, row in all_metabolites_in_taxa.iterrows():
-            if row[given_col] == row[given_col]:
-                if row[cols_to_do[0]] == row[cols_to_do[0]]:
-                    mapping1[row[cols_to_do[0]]] = row[given_col]
-                if row[cols_to_do[1]] == row[cols_to_do[1]]:
-                    mapping2[row[cols_to_do[1]]] = row[given_col]
-
-        if any(x in mapping1.keys() for x in ['', np.nan, 'nan']):
-            raise ValueError
-        if any(x in mapping2.keys() for x in ['', np.nan, 'nan']):
-            raise ValueError
-
-        # Step 2: Iterate through the DataFrame to fill in the empty 'SMILES' values
-        for index, row in all_metabolites_in_taxa.iterrows():
-            if row[given_col] != row[given_col]:
-                m1 = row[cols_to_do[0]]
-                m2 = row[cols_to_do[1]]
-                # prioritise inchikey and smiles
-                if m1 in mapping1:
-                    v = mapping1[m1]
-                    all_metabolites_in_taxa.at[index, given_col] = v
-                elif m2 in mapping2:
-                    v = mapping2[m2]
-                    all_metabolites_in_taxa.at[index, given_col] = v
-
-    for c_id in chem_id_cols:
-        fill_match_ids(c_id)
+    for c_id in ['SMILES', 'InChIKey', 'CAS ID']:
+        all_metabolites_in_taxa = fill_match_ids(all_metabolites_in_taxa, c_id)
 
     all_metabolites_in_taxa['InChIKey_simp'] = all_metabolites_in_taxa['InChIKey'].apply(simplify_inchi_key)
     all_metabolites_in_taxa.to_csv(output_csv)
@@ -194,7 +161,7 @@ def _checks(df):
             f'WARNING: Same some compounds with same InChIsimp and different smiles. See {os.path.join(_temp_output_path, "same_inchisimp_diff_smiles.csv")}')
 
 
-def tidy_and_check_final_dataset(pre_final_df: pd.DataFrame, _temp_output_path: str, final_taxa_compound_csv: str, compound_id_col: str) -> None:
+def tidy_final_dataset(pre_final_df: pd.DataFrame, _temp_output_path: str, final_taxa_compound_csv: str, compound_id_col: str) -> None:
     ## Tidy data a bit
     pre_final_df = pre_final_df.dropna(subset=[compound_id_col, wcvp_accepted_columns['name_w_author']], how='any')
     # Add genus column
@@ -252,4 +219,4 @@ if __name__ == '__main__':
     all_info = add_manual_info_files(with_bioavailibility, maip_output_file=os.path.join(tidied_outputs_folder, 'example_maip_file.csv'))
 
     ### Then tidy and output final dataset
-    tidy_and_check_final_dataset(all_info, tidied_outputs_folder, os.path.join('outputs', 'all_taxa_compound_data.csv'), comp_id_column)
+    tidy_final_dataset(all_info, tidied_outputs_folder, os.path.join('outputs', 'all_taxa_compound_data.csv'), comp_id_column)

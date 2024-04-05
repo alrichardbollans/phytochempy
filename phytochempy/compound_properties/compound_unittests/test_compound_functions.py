@@ -1,9 +1,11 @@
+import os
 import unittest
 
+import numpy as np
 import pandas as pd
 
 from phytochempy.compound_properties import resolve_cas_to_smiles, simplify_inchi_key, resolve_cas_to_inchikey, get_smiles_and_inchi_from_cas_ids, \
-    add_CAS_ID_translations_to_df
+    add_CAS_ID_translations_to_df, fill_match_ids
 
 
 class CASresolve(unittest.TestCase):
@@ -45,8 +47,8 @@ class CASresolve(unittest.TestCase):
         pd.testing.assert_frame_equal(result, correct_df)
 
     def test_df_resolve(self):
-        correct_df = pd.DataFrame([self.aspirin, self.arte, self.artem,self.aspirin])
-        result = add_CAS_ID_translations_to_df(correct_df[['CAS ID']], 'CAS ID','temp_outputs')
+        correct_df = pd.DataFrame([self.aspirin, self.arte, self.artem, self.aspirin])
+        result = add_CAS_ID_translations_to_df(correct_df[['CAS ID']], 'CAS ID', 'temp_outputs')
         pd.testing.assert_frame_equal(result, correct_df)
 
 
@@ -75,6 +77,38 @@ class Testkeys(unittest.TestCase):
         result = simplify_inchi_key(input_data)
         if result is not None:
             raise ValueError
+
+
+class TestFillIds(unittest.TestCase):
+    def setUp(self):
+        self.df = pd.DataFrame({
+            'SMILES': ['CCO', 'BBX', 'C#C', 'CC', np.nan, 'CCCC','CC'],
+            'InChIKey': ['OnyigWHJXaIubT', 'OnyigWHJXaIubT', 'QFJUORZEWOZLNI', np.nan, 'BTJIUGUIPKHNIE', 'BBX','THIS'],
+            'CAS ID': [np.nan, '89-26', '75-25-2', np.nan, '75-00-3', '75-00-3','DEAD'],
+        })
+
+    def test_fill_CAS_IDs(self):
+        actual_df = fill_match_ids(df=self.df, given_col='CAS ID')
+        expected_df = self.df.copy()
+        expected_df['CAS ID'] = ['89-26', '89-26', '75-25-2', 'DEAD', '75-00-3', '75-00-3','DEAD']
+        pd.testing.assert_frame_equal(actual_df, expected_df)
+
+    def test_fill_SMILES(self):
+        actual_df = fill_match_ids(df=self.df, given_col='SMILES')
+        expected_df = self.df.copy()
+        expected_df['SMILES'] = ['CCO', 'BBX', 'C#C', 'CC', 'CCCC', 'CCCC','CC']
+        pd.testing.assert_frame_equal(actual_df, expected_df)
+
+    def test_fill_InChIKey(self):
+        actual_df = fill_match_ids(df=self.df, given_col='InChIKey')
+        expected_df = self.df.copy()
+        expected_df['InChIKey'] = ['OnyigWHJXaIubT', 'OnyigWHJXaIubT', 'QFJUORZEWOZLNI','THIS', 'BTJIUGUIPKHNIE', 'BBX','THIS']
+        pd.testing.assert_frame_equal(actual_df, expected_df)
+
+    def test_with_empty_dataframe(self):
+        df_empty = pd.DataFrame(columns=['SMILES', 'InChIKey', 'CAS ID'])
+        actual_df = fill_match_ids(df=df_empty, given_col='CAS ID')
+        pd.testing.assert_frame_equal(actual_df, df_empty)
 
 
 if __name__ == '__main__':

@@ -81,7 +81,7 @@ def get_smiles_and_inchi_from_cas_ids(cas_ids: List[str], tempout_dir: str = Non
 
     out_df = pd.DataFrame()
 
-    for c_id in tqdm(unique_cas_ids,desc='Resolving CAS IDs..'):
+    for c_id in tqdm(unique_cas_ids, desc='Resolving CAS IDs..'):
         smiles_result = resolve_cas_to_smiles(c_id)
         inch_result = resolve_cas_to_inchikey(c_id)
         if smiles_result is not None or inch_result is not None:
@@ -196,3 +196,50 @@ def filter_rows_containing_compound_keyword(df: pd.DataFrame, cols: List[str], k
     assert len(df.index) == (len(filtered_df.index) + len(negative_filtered_df.index)) + len(nan_df.index)
 
     return filtered_df, negative_filtered_df, nan_df
+
+
+def fill_match_ids(df: pd.DataFrame, given_col: str) -> pd.DataFrame:
+    """
+    :param df: A pandas DataFrame containing chemical data.
+    :param given_col: The name of the column in the DataFrame that needs to be filled with matching compound IDs.
+    :return: A pandas DataFrame with the given_col filled with matching compound IDs.
+
+    This method takes a DataFrame and a column name as parameters.
+    It removes cases with no identifiers and then fills in the matching details for the given_col column from other columns
+    * in the DataFrame.
+
+    """
+    chem_id_cols = ['SMILES', 'InChIKey', 'CAS ID']
+    # Remove cases with no identifiers
+    df = df.copy(deep=True).dropna(subset=chem_id_cols, how='all')
+    ### Fill in matching details for compound ID columns from other dataframes
+    cols_to_do = [cl for cl in chem_id_cols if cl != given_col]
+    # Step 1: Create a mappings to match known pairs of IDs
+    mapping1 = {}
+    mapping2 = {}
+    for index, row in df.iterrows():
+        if row[given_col] == row[given_col]: # If not nan
+            if row[cols_to_do[0]] == row[cols_to_do[0]]:
+                mapping1[row[cols_to_do[0]]] = row[given_col]
+            if row[cols_to_do[1]] == row[cols_to_do[1]]:
+                mapping2[row[cols_to_do[1]]] = row[given_col]
+
+    if any(x in mapping1.keys() for x in ['', np.nan, 'nan']):
+        raise ValueError
+    if any(x in mapping2.keys() for x in ['', np.nan, 'nan']):
+        raise ValueError
+
+    # Step 2: Iterate through the DataFrame to fill in the empty given_col values
+    for index, row in df.iterrows():
+        if row[given_col] != row[given_col]:
+            m1 = row[cols_to_do[0]]
+            m2 = row[cols_to_do[1]]
+            # prioritise inchikey and smiles
+            if m1 in mapping1:
+                v = mapping1[m1]
+                df.at[index, given_col] = v
+            elif m2 in mapping2:
+                v = mapping2[m2]
+                df.at[index, given_col] = v
+
+    return df
