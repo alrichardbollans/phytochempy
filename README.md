@@ -1,6 +1,6 @@
-# PlantChemicalDiversity
+## phytochempy
 
-A repository for analysing chemical diversity in vascular plants.
+A python package to download and enrich phytochemical data 
 
 ## Installation
 
