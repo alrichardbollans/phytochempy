@@ -12,7 +12,14 @@ chembl_apm_assay_info_csv = os.path.join(_input_path, 'chembl_apm_assay_info.csv
 
 
 def convert_chembl_assay_value_to_ic50(given_val: float):
+    """
+    Convert a ChEMBL assay value to IC50.
+
+    :param given_val: The ChEMBL assay value to be converted.
+    :return: The converted IC50 value.
+    """
     if given_val is not None:
+        given_val = float(given_val)
         return (10 ** -given_val) * (10 ** 6)
     else:
         return given_val
@@ -94,6 +101,7 @@ def update_compound_info_from_chembl_apm_assays(pchembl_active_threshold: float 
                                                                                                           compound_id_col].dropna().values else np.nan)
 
     df = df.sort_values(by=compound_id_col)
+    df = df.reset_index(drop=True)
 
     df.to_csv(assay_csv)
     return df
