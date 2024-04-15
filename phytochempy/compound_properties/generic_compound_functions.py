@@ -22,7 +22,6 @@ def resolve_cas_to_smiles(cas_id: str):
 
     """
     try:
-        print(cas_id)
         out = cirpy.resolve(cas_id, 'smiles')
     except (urllib.error.HTTPError, urllib.error.URLError):
         out = np.nan
@@ -39,7 +38,6 @@ def resolve_cas_to_inchikey(cas_id: str):
     :return: The resolved InChIKey or np.nan if not found.
     """
     try:
-        print(cas_id)
         inch = cirpy.resolve(cas_id, 'stdinchikey')
         if inch is not None:
             out = inch.replace('InChIKey=', '')

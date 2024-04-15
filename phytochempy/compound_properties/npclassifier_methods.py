@@ -11,12 +11,22 @@ from typing import List
 import requests
 from tqdm import tqdm
 
-NP_CLASSIFIER_COLUMNS = [
+_NP_CLASSIFIER_COLUMNS = [
     'NPclassif_class_results', 'NPclassif_superclass_results',
     'NPclassif_pathway_results', 'NPclassif_isglycoside']
 
 
+def get_npclassifier_result_columns_in_df(df: pd.DataFrame) -> List[str]:
+    out = []
+    for c in df.columns.tolist():
+        if any(x in c for x in _NP_CLASSIFIER_COLUMNS):
+            out.append(c)
+    return out
+
+
+
 def npclassify_smiles(smiles: str) -> dict:
+    # From https://ccms-ucsd.github.io/GNPSDocumentation/api/
     # Function to classify a single SMILES string
     if smiles == smiles and smiles is not None:
         time.sleep(0.1)  # check rate limiting
@@ -99,8 +109,7 @@ def get_npclassif_classes_from_smiles(smiles: List[str], npclassifier_cache_dir:
             f'You can attempt to resolve these through the gnps portal.')
         print(
             f'To avoid repeating searches for these SMILES, you can save the manual output in: {npclassifier_cache_dir} with a file name starting with: {manual_file_tag}. Then rerun this function.')
-        ## Some smiles aren't resolved through the API that seem to be resolved ok through the portal
-        ### Get NPclassifier info
+        ## Some smiles aren't resolved through the API that seem to be resolved ok through the portal:
         # https://gnps.ucsd.edu/ProteoSAFe/index.jsp?params=%7B%22workflow%22:%22NPCLASSIFIER%22%7D
         # See: https://ccms-ucsd.github.io/GNPSDocumentation/api/#structure-natural-product-classifier-np-classifier
         df = pd.DataFrame(failed_smiles, columns=['SMILES'])
@@ -114,7 +123,7 @@ def get_npclassifier_classes_from_df(df: pd.DataFrame, smiles_col: str, tempout_
     npclassifier_info = get_npclassif_classes_from_smiles(df[smiles_col].dropna(), tempout_dir)
 
     npclassifier_info[
-        ['SMILES'] + NP_CLASSIFIER_COLUMNS].drop_duplicates(keep='first').dropna(subset='SMILES')
+        ['SMILES'] + _NP_CLASSIFIER_COLUMNS].drop_duplicates(keep='first').dropna(subset='SMILES')
 
     all_metabolites_with_class_info = pd.merge(df, npclassifier_info, how='left', on='SMILES')
 

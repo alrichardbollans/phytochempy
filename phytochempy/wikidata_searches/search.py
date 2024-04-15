@@ -101,3 +101,18 @@ def tidy_wikidata_output(wikidata_results_csv: str, output_csv: str, wcvp_versio
     acc_df = acc_df.dropna(subset=wcvp_accepted_columns['name_w_author'])
     acc_df = acc_df.sort_values(by=wcvp_accepted_columns['name'])
     acc_df.to_csv(output_csv)
+
+
+def get_wikidata(wiki_data_id: str, temp_output_csv: str, tidied_output_csv: str, limit: int = 100000):
+    """
+    Fetches data from WikiData based on the provided ID and stores the result in a CSV file after tidying it.
+
+    :param wiki_data_id: The ID of the WikiData entry to fetch data from.
+    :param temp_output_csv: The file path to store the temporary output CSV file.
+    :param tidied_output_csv: The file path to store the tidied output CSV file.
+    :param limit: The maximum number of results to fetch (default is 100000).
+    :return: None
+    """
+    my_query = generate_wikidata_search_query(wiki_data_id, limit)
+    submit_query(my_query, temp_output_csv, limit)
+    tidy_wikidata_output(temp_output_csv, tidied_output_csv)

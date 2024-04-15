@@ -1,46 +1,21 @@
 import os.path
+from typing import List
 
-import numpy as np
 import pandas as pd
 from wcvp_download import wcvp_accepted_columns
 from wcvp_name_matching import get_genus_from_full_name, output_record_col_names
 
-from phytochempy.compound_properties import get_classyfire_classes_from_df, get_compound_info_from_chembl_apm_assays, \
-    simplify_inchi_key, add_chembl_apm_data_to_compound_df, add_bioavailability_rules_to_df, COMPOUND_NAME_COLUMN, get_npclassifier_classes_from_df, \
-    fill_match_ids
-from phytochempy.knapsack_searches import get_knapsack_compounds_in_family, tidy_knapsack_results
-from phytochempy.wikidata_searches import generate_wikidata_search_query, submit_query, tidy_wikidata_output
+from phytochempy.compound_properties import simplify_inchi_key, COMPOUND_NAME_COLUMN, fill_match_ids
 
 
-def get_wikidata(wiki_data_id: str, temp_output_csv: str, tidied_output_csv: str, limit: int = 100000):
-    # Example usage
-    my_query = generate_wikidata_search_query(wiki_data_id, limit)
-    submit_query(my_query, temp_output_csv, limit)
-    tidy_wikidata_output(temp_output_csv, tidied_output_csv)
+def merge_and_tidy_compound_datasets(datasets: List[pd.DataFrame], output_csv: str):
+    """
+    Given datasets from WikiData and Knapsack, merge them and tidy them.
 
-
-def get_knapsack_data(families_of_interest: list, temp_output_path: str, tidied_output_csv: str, add_smiles_and_inchi: bool = True):
-    def _temp_out_for_fam(faml: str) -> str:
-        return os.path.join(temp_output_path, faml + '_kn_search.csv')
-
-    def _temp_out_for_fam_Acc(faml: str) -> str:
-        return os.path.join(temp_output_path, faml + '_kn_search_accepted_info.csv')
-
-    for fam in families_of_interest:
-        get_knapsack_compounds_in_family(fam, _temp_out_for_fam(fam))
-        tidy_knapsack_results(_temp_out_for_fam(fam), _temp_out_for_fam_Acc(fam), fam, cirpy_cache_dir=temp_output_path,
-                              add_smiles_and_inchi=add_smiles_and_inchi)
-
-    all_kn_dfs = pd.DataFrame()
-
-    for fam in families_of_interest:
-        new_df = pd.read_csv(_temp_out_for_fam_Acc(fam), index_col=0)
-        all_kn_dfs = pd.concat([all_kn_dfs, new_df])
-
-    all_kn_dfs.to_csv(tidied_output_csv)
-
-
-def merge_and_tidy_compound_datasets(datasets: list, output_csv: str):
+    :param datasets: A list of datasets to merge.
+    :param output_csv: The path to the output CSV file.
+    :return: The merged and tidied dataset.
+    """
     all_metabolites_in_taxa = pd.concat(datasets)
     all_metabolites_in_taxa = all_metabolites_in_taxa.dropna(subset=wcvp_accepted_columns['name_w_author'])
     ### Format
@@ -67,42 +42,8 @@ def merge_and_tidy_compound_datasets(datasets: list, output_csv: str):
     return all_metabolites_in_taxa
 
 
-def add_chembl_data(df: pd.DataFrame, out_csv: str = None, update: bool = False, compound_id_column: str = 'InChiKey'):
-    get_compound_info_from_chembl_apm_assays(update=update)
-    df_with_assay_data = add_chembl_apm_data_to_compound_df(df, output_csv=out_csv, compound_id_col=compound_id_column)
-    return df_with_assay_data
-
-
-def add_classyfire_info(df: pd.DataFrame, _temp_output_path: str, output_csv: str = None):
-    ### Get classyfire info
-    # Server was down as of 13/12/23
-    all_metabolites_with_classyfire_info = get_classyfire_classes_from_df(df, 'SMILES',
-                                                                          tempout_dir=_temp_output_path)
-
-    if output_csv is not None:
-        all_metabolites_with_classyfire_info.to_csv(output_csv)
-    return all_metabolites_with_classyfire_info
-
-
-def add_npclassifier_info(df: pd.DataFrame, _temp_output_path: str, output_csv: str = None):
-    all_metabolites_with_info = get_npclassifier_classes_from_df(df, 'SMILES',
-                                                                 tempout_dir=_temp_output_path)
-
-    if output_csv is not None:
-        all_metabolites_with_info.to_csv(output_csv)
-    return all_metabolites_with_info
-
-
-def add_bioavailability_info(df: pd.DataFrame, out_csv: str = None):
-    bio_av = add_bioavailability_rules_to_df(df, 'SMILES')
-
-    if out_csv is not None:
-        bio_av.to_csv(out_csv)
-    return bio_av
-
-
 def get_manual_MAIP_to_upload(df: pd.DataFrame, _temp_output_path):
-    ''' Example for data without, AFAIK, no API. This generates files to upload to obtain information'''
+    ''' This generates files to upload to obtain information, which can be merged in later steps.'''
 
     ### Get MAIP info
     # https://www.ebi.ac.uk/chembl/maip/
@@ -144,6 +85,18 @@ def _checks(df):
 
 
 def tidy_final_dataset(pre_final_df: pd.DataFrame, _temp_output_path: str, final_taxa_compound_csv: str, compound_id_col: str) -> None:
+    """
+    :param pre_final_df: A pandas DataFrame containing the pre-final dataset.
+    :param _temp_output_path: The path to temporarily store the output.
+    :param final_taxa_compound_csv: The path to save the final taxa compound CSV file.
+    :param compound_id_col: The column name of the compound ID in the DataFrame.
+    :return: None
+
+    Tidies the pre-final dataset by dropping rows with missing values in the compound ID column or plant accepted name column.
+    Adds a 'Genus' column by applying the 'get_genus_from_full_name' function to the accepted name column.
+    Drops duplicate rows based on the compound ID and compound name with author columns.
+    Sorts the DataFrame by plant name with author and compound name column. Saves the sorted DataFrame to a CSV file.
+    """
     ## Tidy data a bit
     pre_final_df = pre_final_df.dropna(subset=[compound_id_col, wcvp_accepted_columns['name_w_author']], how='any')
     # Add genus column

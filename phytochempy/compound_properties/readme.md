@@ -2,8 +2,12 @@
 
 import os
 import pandas as pd
-from phytochempy.data_compilation_utilities import get_wikidata,get_knapsack_data,merge_and_tidy_compound_datasets,get_manual_files_to_upload,\
-add_npclassifier_info,add_chembl_data,add_bioavailability_info,add_manual_info_files,tidy_final_dataset
+from phytochempy.data_compilation_utilities import merge_and_tidy_compound_datasets,get_manual_MAIP_to_upload,\
+add_manual_info_files,tidy_final_dataset
+from phytochempy.compound_properties import add_bioavailability_rules_to_df, get_npclassifier_classes_from_df, update_compound_info_from_chembl_apm_assays,\
+    add_chembl_apm_data_to_compound_df
+from phytochempy.wikidata_searches import get_wikidata
+from phytochempy.knapsack_searches import get_knapsack_data
 ### Example workflow
 
 # Define context
@@ -23,23 +27,23 @@ tidy_knapsack_data = pd.read_csv(os.path.join(tidied_outputs_folder, 'knapsack_d
 all_compounds_in_taxa = merge_and_tidy_compound_datasets([tidy_wiki_data, tidy_knapsack_data],
                                                          os.path.join(tidied_outputs_folder, 'merged_data.csv'))
 
-get_manual_files_to_upload(all_compounds_in_taxa, temp_outputs_folder)
 
 ## Add extra information related to the compound properties
 
 # These steps can be included/removed as needed
 # For the longer processes, to avoid repeats you can simply read the associated temp_output if the step has already been run
-with_npclass_classes = add_npclassifier_info(all_compounds_in_taxa, temp_outputs_folder, os.path.join(tidied_outputs_folder, 'npclassifier.csv'))
+with_npclass_classes = get_npclassifier_classes_from_df(all_compounds_in_taxa, 'SMILES',temp_outputs_folder)
 
-with_chembl_data = add_chembl_data(with_npclass_classes, os.path.join(temp_outputs_folder, 'chembl.csv'), compound_id_column=comp_id_column)
-# with_chembl_data = pd.read_csv(os.path.join(temp_outputs_folder, 'chembl.csv'), index_col=0)
-with_bioavailibility = add_bioavailability_info(with_chembl_data, os.path.join(tidied_outputs_folder, 'bioavailibility.csv'))
+
+update_compound_info_from_chembl_apm_assays()
+with_chembl_data = add_chembl_apm_data_to_compound_df(with_npclass_classes, output_csv=os.path.join(temp_outputs_folder, 'chembl.csv'), compound_id_col=comp_id_column)
+with_bioavailibility = add_bioavailability_rules_to_df(with_chembl_data, os.path.join(tidied_outputs_folder, 'bioavailibility.csv'))
 # with_bioavailibility = pd.read_csv(os.path.join(tidied_outputs_folder, 'bioavailibility.csv'), index_col=0)
 # Issues with classyfire servers
 # with_classyfire_classes = add_classyfire_info(with_chembl_data, temp_outputs_folder, os.path.join(tidied_outputs_folder, 'classyfire.csv'))
 
 ## This step requires some manual input
-
+get_manual_MAIP_to_upload(all_compounds_in_taxa, temp_outputs_folder)
 all_info = add_manual_info_files(with_bioavailibility,
                                  maip_output_file=os.path.join(tidied_outputs_folder, 'example_maip_file.csv'))
 

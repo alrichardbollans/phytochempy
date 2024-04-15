@@ -23,11 +23,9 @@ wiki_data_id_for_order = 'Q736182'  # This is the ID for the order containing `f
 temp_outputs_folder = 'temp'
 tidied_outputs_folder = 'tidied'
 import os
-from phytochempy.wikidata_searches import generate_wikidata_search_query, submit_query, tidy_wikidata_output
+from phytochempy.wikidata_searches import get_wikidata
+get_wikidata(wiki_data_id_for_order, os.path.join(temp_outputs_folder, 'wikidata.csv'), os.path.join(tidied_outputs_folder, 'wikidata.csv'), limit=1000000)
 
-my_query = generate_wikidata_search_query(wiki_data_id_for_order, limit=1000000)
-submit_query(my_query, os.path.join(temp_outputs_folder, 'wikidata.csv'), query_limit=1000000)
-tidy_wikidata_output(os.path.join(temp_outputs_folder, 'wikidata.csv'), os.path.join(tidied_outputs_folder, 'wikidata.csv'))
 
 ```
 
@@ -35,8 +33,7 @@ Similarly, to get KNApSAcK data for a set of families:
 
 ```python
 import os
-from phytochempy.data_compilation_utilities import get_knapsack_data
-
+from phytochempy.knapsack_searches import get_knapsack_data
 get_knapsack_data(families, temp_outputs_folder, os.path.join(tidied_outputs_folder, 'knapsack_data.csv'))
 
 ```

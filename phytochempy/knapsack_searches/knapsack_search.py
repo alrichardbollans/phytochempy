@@ -134,3 +134,34 @@ def get_knapsack_formulas_for_compound(metabolite: str):
     except (KeyError, IndexError):
         print(f'Warning: No info found for {metabolite}')
         return []
+
+
+def get_knapsack_data(families_of_interest: list, temp_output_path: str, tidied_output_csv: str, add_smiles_and_inchi: bool = True):
+    """
+    Retrieves Knapsack data for specified families of interest and saves it to a tidied output CSV file.
+
+    :param families_of_interest: A list of families for which Knapsack data should be retrieved.
+    :param temp_output_path: The temporary output directory where intermediate files will be stored.
+    :param tidied_output_csv: The file path to save the tidied Knapsack data.
+    :param add_smiles_and_inchi: Optional. Specifies whether to add SMILES and InChI information to the tidied output. Defaults to True.
+    :return: None
+    """
+
+    def _temp_out_for_fam(faml: str) -> str:
+        return os.path.join(temp_output_path, faml + '_kn_search.csv')
+
+    def _temp_out_for_fam_Acc(faml: str) -> str:
+        return os.path.join(temp_output_path, faml + '_kn_search_accepted_info.csv')
+
+    for fam in families_of_interest:
+        get_knapsack_compounds_in_family(fam, _temp_out_for_fam(fam))
+        tidy_knapsack_results(_temp_out_for_fam(fam), _temp_out_for_fam_Acc(fam), fam, cirpy_cache_dir=temp_output_path,
+                              add_smiles_and_inchi=add_smiles_and_inchi)
+
+    all_kn_dfs = pd.DataFrame()
+
+    for fam in families_of_interest:
+        new_df = pd.read_csv(_temp_out_for_fam_Acc(fam), index_col=0)
+        all_kn_dfs = pd.concat([all_kn_dfs, new_df])
+
+    all_kn_dfs.to_csv(tidied_output_csv)

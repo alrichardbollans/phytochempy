@@ -133,6 +133,7 @@ def get_classyfire_classes_from_smiles(smiles: List[str], classyfire_cache_dir: 
 
 def get_classyfire_classes_from_df(df: pd.DataFrame, smiles_col: str, tempout_dir: str = None) -> pd.DataFrame:
     # Note to use https://cfb.fiehnlab.ucdavis.edu/ if this breaks
+    # Server was down as of 13/12/23
     classyfire_info = get_classyfire_classes_from_smiles(df[smiles_col].dropna(), tempout_dir)
     classyfire_info = classyfire_info.rename(columns={'original_SMILES': 'SMILES'})
 
