@@ -3,13 +3,12 @@ from setuptools import setup, find_packages
 setup(
     name='phytochempy',
     version='1.0',
-    packages=find_packages(include=['phytochempy']),
+    packages=find_packages(),
     package_data={"phytochempy": ["compound_properties/inputs/*"]},
     install_requires=[
         'pandas',
         'numpy',
         'tqdm'
-
     ],
     extras_require={'knapsack': ["html5lib", 'beautifulsoup4', 'cirpy'],
                     'compound_metrics': ['rdkit', 'chembl_webresource_client'],
