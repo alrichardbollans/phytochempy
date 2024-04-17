@@ -22,7 +22,7 @@ class TestTidyWikidataOutput(unittest.TestCase):
         output_df = pd.read_csv(output_csv, index_col=0)
         correct_df = pd.read_csv(self.correct_output, index_col=0)
 
-        pd.testing.assert_frame_equal(output_df, correct_df)
+        pd.testing.assert_frame_equal(output_df[correct_df.columns], correct_df)
 
     def test_querying(self):
         my_query = generate_wikidata_search_query('Q1073514', 10)

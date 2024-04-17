@@ -2,8 +2,8 @@ import time
 
 import pandas as pd
 import requests
-from wcvp_download import get_all_taxa, wcvp_columns, wcvp_accepted_columns
-from wcvp_name_matching import get_accepted_wcvp_info_from_ipni_ids_in_column, output_record_col_names, get_accepted_info_from_names_in_column
+from wcvpy.wcvp_download import get_all_taxa, wcvp_columns, wcvp_accepted_columns
+from wcvpy.wcvp_name_matching import get_accepted_wcvp_info_from_ipni_ids_in_column, output_record_col_names, get_accepted_info_from_names_in_column
 
 from phytochempy.compound_properties import COMPOUND_NAME_COLUMN
 

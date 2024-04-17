@@ -2,8 +2,8 @@ import os.path
 from typing import List
 
 import pandas as pd
-from wcvp_download import wcvp_accepted_columns
-from wcvp_name_matching import get_genus_from_full_name, output_record_col_names
+from wcvpy.wcvp_download import wcvp_accepted_columns
+from wcvpy.wcvp_name_matching import get_genus_from_full_name, output_record_col_names
 
 from phytochempy.compound_properties import simplify_inchi_key, COMPOUND_NAME_COLUMN, fill_match_ids
 

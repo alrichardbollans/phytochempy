@@ -8,7 +8,8 @@ setup(
     install_requires=[
         'pandas',
         'numpy',
-        'tqdm'
+        'tqdm',
+        'wcvpy>=1.3.2'
     ],
     extras_require={'knapsack': ["html5lib", 'beautifulsoup4', 'cirpy'],
                     'compound_metrics': ['rdkit', 'chembl_webresource_client'],

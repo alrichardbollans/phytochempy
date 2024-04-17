@@ -4,7 +4,7 @@ import unittest
 import pandas as pd
 from pkg_resources import resource_filename
 
-from phytochempy.metabolite_properties import get_classyfire_classes_from_smiles, get_classyfire_classes_from_df
+from phytochempy.compound_properties import get_classyfire_classes_from_smiles, get_classyfire_classes_from_df
 
 input_test_dir = resource_filename(__name__, 'test_inputs')
 test_output_dir = resource_filename(__name__, 'test_outputs')

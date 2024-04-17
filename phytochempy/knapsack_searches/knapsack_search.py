@@ -4,8 +4,8 @@ import time
 import pandas as pd
 import requests
 from tqdm import tqdm
-from wcvp_download import wcvp_accepted_columns
-from wcvp_name_matching import get_accepted_info_from_names_in_column
+from wcvpy.wcvp_download import wcvp_accepted_columns
+from wcvpy.wcvp_name_matching import get_accepted_info_from_names_in_column
 
 from phytochempy.compound_properties import COMPOUND_NAME_COLUMN, add_CAS_ID_translations_to_df
 
@@ -55,7 +55,7 @@ def get_knapsack_compounds_in_family(family: str, temp_output_csv: str):
     if not os.path.isdir(os.path.dirname(temp_output_csv)) and os.path.dirname(temp_output_csv) != '':
         os.mkdir(os.path.dirname(temp_output_csv))
 
-    from wcvp_download import get_all_taxa, wcvp_columns
+    from wcvpy.wcvp_download import get_all_taxa, wcvp_columns
     # Note that this is greedy as name matches in Knapsack search include partial e.g. Cissus matches Narcissus
     # Account for this by removing results without name resolution
     wcvp_data = get_all_taxa(families_of_interest=[family])
