@@ -26,7 +26,9 @@ def merge_and_tidy_compound_datasets(datasets: List[pd.DataFrame], output_csv: s
     output_columns = output_record_col_names + [COMPOUND_NAME_COLUMN, 'SMILES', 'InChIKey', 'CAS ID', 'Source']
 
     all_metabolites_in_taxa = all_metabolites_in_taxa[output_columns]
+    print('Standardising SMILES')
     all_metabolites_in_taxa['Standard_SMILES'] = all_metabolites_in_taxa['SMILES'].apply(standardise_SMILES)
+    print('Getting MAIP standardisation of SMILES')
     all_metabolites_in_taxa['MAIP_SMILES'] = all_metabolites_in_taxa['SMILES'].apply(standardise_smiles_to_MAIP_smiles)
     start_cols = ['accepted_name_w_author', COMPOUND_NAME_COLUMN, 'Standard_SMILES', 'MAIP_SMILES', 'SMILES', 'InChIKey', 'CAS ID', 'Source']
 

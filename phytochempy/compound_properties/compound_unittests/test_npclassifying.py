@@ -21,7 +21,7 @@ class TestNPClassifierMethods(unittest.TestCase):
                                           'NPclassif_superclass_results': 'Fatty acyls:Monoterpenoids',
                                           'NPclassif_superclass_results_0': 'Fatty acyls',
                                           'NPclassif_superclass_results_1': 'Monoterpenoids',
-                                          'SMILES': 'CC(=C)CCO'},
+                                          'npSMILES': 'CC(=C)CCO'},
                             'CCCCCCCCCCCCCCCC(=O)O': {'NPclassif_class_results': 'Branched fatty acids:Unsaturated fatty acids',
                                                       'NPclassif_class_results_0': 'Branched fatty acids',
                                                       'NPclassif_class_results_1': 'Unsaturated fatty acids',
@@ -30,8 +30,8 @@ class TestNPClassifierMethods(unittest.TestCase):
                                                       'NPclassif_pathway_results_0': 'Fatty acids',
                                                       'NPclassif_superclass_results': 'Fatty Acids and Conjugates',
                                                       'NPclassif_superclass_results_0': 'Fatty Acids and Conjugates',
-                                                      'SMILES': 'CCCCCCCCCCCCCCCC(=O)O'},
-                            "CC(=O)OC1=CC=CC=C1C(=O)O": {'SMILES': 'CC(=O)OC1=CC=CC=C1C(=O)O',
+                                                      'npSMILES': 'CCCCCCCCCCCCCCCC(=O)O'},
+                            "CC(=O)OC1=CC=CC=C1C(=O)O": {'npSMILES': 'CC(=O)OC1=CC=CC=C1C(=O)O',
                                                          'NPclassif_class_results': 'Simple phenolic acids',
                                                          'NPclassif_class_results_0': 'Simple phenolic acids',
                                                          'NPclassif_isglycoside': False,
@@ -39,12 +39,12 @@ class TestNPClassifierMethods(unittest.TestCase):
                                                          'NPclassif_pathway_results_0': 'Shikimates and Phenylpropanoids',
                                                          'NPclassif_superclass_results': 'Phenolic acids (C6-C1)',
                                                          'NPclassif_superclass_results_0': 'Phenolic acids (C6-C1)'},
-                            "C1=CC=CC=C1": {'SMILES': 'C1=CC=CC=C1',
+                            "C1=CC=CC=C1": {'npSMILES': 'C1=CC=CC=C1',
                                             'NPclassif_class_results': np.nan, 'NPclassif_isglycoside': False,
                                             'NPclassif_pathway_results': 'Shikimates and Phenylpropanoids',
                                             'NPclassif_pathway_results_0': 'Shikimates and Phenylpropanoids',
                                             'NPclassif_superclass_results': np.nan},
-                            "C1CCCCC1": {'SMILES': 'C1CCCCC1',
+                            "C1CCCCC1": {'npSMILES': 'C1CCCCC1',
                                          'NPclassif_class_results': 'Lactones',
                                          'NPclassif_class_results_0': 'Lactones',
                                          'NPclassif_isglycoside': False,
@@ -66,10 +66,10 @@ class TestNPClassifierMethods(unittest.TestCase):
     def test_list(self):
         result = get_npclassif_classes_from_smiles(list(self.smiles_list.keys()), 'temp_outputs')
         classes = result.columns.tolist()
-        classes.remove('SMILES')
+        classes.remove('npSMILES')
         classes.remove('NPclassif_isglycoside')
         for sm in self.smiles_list:
-            this_df = result[result['SMILES'] == sm]
+            this_df = result[result['npSMILES'] == sm]
             self.assertEqual(len(this_df), 1)
             for c in classes:
                 if c in self.smiles_list[sm]:
@@ -85,7 +85,7 @@ class TestNPClassifierMethods(unittest.TestCase):
     def test_df(self):
 
         df = pd.DataFrame.from_dict(self.smiles_list, orient='index')
-
+        df =df.rename(columns={'npSMILES':'SMILES'})
         df = df.reset_index(drop=True)
 
         result = get_npclassifier_classes_from_df(df[['SMILES']], 'SMILES', 'temp_outputs')
@@ -97,7 +97,7 @@ class TestNPClassifierMethods(unittest.TestCase):
     def test_reading_manual_data(self):
         result = read_manual_npclassifier_input(os.path.join('test_inputs', 'manual_test_results.tsv'))
         correct = pd.read_csv(os.path.join('test_inputs', 'test_manual_input_correct.csv'))
-
+        correct = correct.rename(columns={'SMILES':'npSMILES'})
         result = result[correct.columns.tolist()]
 
         pd.testing.assert_frame_equal(result,correct)

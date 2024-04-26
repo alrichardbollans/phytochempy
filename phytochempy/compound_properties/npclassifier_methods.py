@@ -24,7 +24,6 @@ def get_npclassifier_result_columns_in_df(df: pd.DataFrame) -> List[str]:
     return out
 
 
-
 def npclassify_smiles(smiles: str) -> dict:
     # From https://ccms-ucsd.github.io/GNPSDocumentation/api/
     # Function to classify a single SMILES string
@@ -49,7 +48,7 @@ def npclassify_smiles(smiles: str) -> dict:
                 return_dict['NPclassif_' + k] = return_dict[k]
                 del return_dict[k]
 
-            return_dict['SMILES'] = smiles
+            return_dict['npSMILES'] = smiles
             return return_dict
         else:
 
@@ -76,7 +75,7 @@ def get_npclassif_classes_from_smiles(smiles: List[str], npclassifier_cache_dir:
         if len(existing_info) > 0:
             existing_df = pd.concat(existing_info)
 
-            already_known_smiles = existing_df['SMILES'].tolist()
+            already_known_smiles = existing_df['npSMILES'].tolist()
             # remove the item for all its occurrences
             for alread_known in already_known_smiles:
                 c = unique_smiles.count(alread_known)
@@ -99,7 +98,7 @@ def get_npclassif_classes_from_smiles(smiles: List[str], npclassifier_cache_dir:
             out_df.to_csv(os.path.join(npclassifier_cache_dir, temp_file_tag + str(uuid.uuid4()) + '.csv'))
         if existing_df is not None:
             out_df = pd.concat([out_df, existing_df])
-    out_df = out_df.sort_values(by='SMILES')
+    out_df = out_df.sort_values(by='npSMILES')
     out_df = out_df.reset_index(drop=True)
 
     if len(failed_smiles) > 0:
@@ -112,21 +111,25 @@ def get_npclassif_classes_from_smiles(smiles: List[str], npclassifier_cache_dir:
         ## Some smiles aren't resolved through the API that seem to be resolved ok through the portal:
         # https://gnps.ucsd.edu/ProteoSAFe/index.jsp?params=%7B%22workflow%22:%22NPCLASSIFIER%22%7D
         # See: https://ccms-ucsd.github.io/GNPSDocumentation/api/#structure-natural-product-classifier-np-classifier
-        df = pd.DataFrame(failed_smiles, columns=['SMILES'])
-        df = df[['SMILES']].dropna().drop_duplicates(
+        df = pd.DataFrame(failed_smiles, columns=['npSMILES'])
+        df = df[['npSMILES']].dropna().drop_duplicates(
             keep='first')
         df.to_csv(failed_file)
     return out_df
 
 
 def get_npclassifier_classes_from_df(df: pd.DataFrame, smiles_col: str, tempout_dir: str = None) -> pd.DataFrame:
+    if smiles_col == 'npSMILES':
+        raise ValueError(f'Column used to send smiles to npclassifier is named {smiles_col}, which is not allowed and will cause merge issues.')
+    if 'npSMILES' in df.columns:
+        raise ValueError(f'npSMILES is a column in your dataframe, which is not allowed and will cause merge issues.')
     npclassifier_info = get_npclassif_classes_from_smiles(df[smiles_col].dropna(), tempout_dir)
 
     npclassifier_info[
-        ['SMILES'] + _NP_CLASSIFIER_COLUMNS].drop_duplicates(keep='first').dropna(subset='SMILES')
+        ['npSMILES'] + _NP_CLASSIFIER_COLUMNS].drop_duplicates(keep='first').dropna(subset='npSMILES')
 
-    all_metabolites_with_class_info = pd.merge(df, npclassifier_info, how='left', on='SMILES')
-
+    all_metabolites_with_class_info = pd.merge(df, npclassifier_info, how='left', left_on=smiles_col, right_on='npSMILES')
+    all_metabolites_with_class_info = all_metabolites_with_class_info.drop(columns=['npSMILES'])
     return all_metabolites_with_class_info
 
 
@@ -134,11 +137,11 @@ def read_manual_npclassifier_input(npclassifier_output_file: str):
     ### Get NPclassifier info
     np_classif_results = pd.read_csv(npclassifier_output_file,
                                      sep='\t').drop_duplicates(keep='first')
-    rename_dict = {'smiles': 'SMILES'}
+    rename_dict = {'smiles': 'npSMILES'}
     for c in np_classif_results.columns:
         if c != 'smiles':
             rename_dict[c] = 'NPclassif_' + c
-    np_classif_results = np_classif_results.rename(columns=rename_dict).dropna(subset='SMILES')
+    np_classif_results = np_classif_results.rename(columns=rename_dict).dropna(subset='npSMILES')
 
     for col in ['NPclassif_class_results', 'NPclassif_superclass_results',
                 'NPclassif_pathway_results']:
