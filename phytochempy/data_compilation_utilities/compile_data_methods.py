@@ -5,7 +5,8 @@ import pandas as pd
 from wcvpy.wcvp_download import wcvp_accepted_columns
 from wcvpy.wcvp_name_matching import get_genus_from_full_name, output_record_col_names
 
-from phytochempy.compound_properties import simplify_inchi_key, COMPOUND_NAME_COLUMN, fill_match_ids
+from phytochempy.compound_properties import simplify_inchi_key, COMPOUND_NAME_COLUMN, fill_match_ids, standardise_SMILES, \
+    standardise_smiles_to_MAIP_smiles
 
 
 def merge_and_tidy_compound_datasets(datasets: List[pd.DataFrame], output_csv: str):
@@ -25,8 +26,9 @@ def merge_and_tidy_compound_datasets(datasets: List[pd.DataFrame], output_csv: s
     output_columns = output_record_col_names + [COMPOUND_NAME_COLUMN, 'SMILES', 'InChIKey', 'CAS ID', 'Source']
 
     all_metabolites_in_taxa = all_metabolites_in_taxa[output_columns]
-
-    start_cols = ['accepted_name_w_author', COMPOUND_NAME_COLUMN, 'InChIKey', 'SMILES', 'CAS ID', 'Source']
+    all_metabolites_in_taxa['Standard_SMILES'] = all_metabolites_in_taxa['SMILES'].apply(standardise_SMILES)
+    all_metabolites_in_taxa['MAIP_SMILES'] = all_metabolites_in_taxa['SMILES'].apply(standardise_smiles_to_MAIP_smiles)
+    start_cols = ['accepted_name_w_author', COMPOUND_NAME_COLUMN, 'Standard_SMILES', 'MAIP_SMILES', 'SMILES', 'InChIKey', 'CAS ID', 'Source']
 
     all_metabolites_in_taxa = all_metabolites_in_taxa[
         start_cols + [col for col in all_metabolites_in_taxa.columns if
@@ -34,7 +36,7 @@ def merge_and_tidy_compound_datasets(datasets: List[pd.DataFrame], output_csv: s
 
     # Tidy final list
 
-    for c_id in ['SMILES', 'InChIKey', 'CAS ID']:
+    for c_id in ['Standard_SMILES', 'InChIKey', 'CAS ID']:
         all_metabolites_in_taxa = fill_match_ids(all_metabolites_in_taxa, c_id)
 
     all_metabolites_in_taxa['InChIKey_simp'] = all_metabolites_in_taxa['InChIKey'].apply(simplify_inchi_key)

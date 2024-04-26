@@ -8,9 +8,58 @@ from urllib.error import HTTPError
 import cirpy
 import numpy as np
 import pandas as pd
+from rdkit import Chem
+from rdkit.Chem.MolStandardize import rdMolStandardize
+from standardiser import standardise
 from tqdm import tqdm
 
 COMPOUND_NAME_COLUMN = 'example_compound_name'
+
+
+def standardise_smiles_to_MAIP_smiles(smiles: str) -> str:
+    '''
+    Molecular standardisation following MAIP procedure: https://chembl.gitbook.io/malaria-project/molecule-standardisation
+    using the https://github.com/flatkinson/standardiser package.
+
+    Should only be used when only interested in parent (bioactive) components.
+
+    Process:
+    - Break bonds to Group I or II metals
+    - Neutralize charges by adding/removing protons
+    - Apply standardization rules
+    - Neutralise any charges exposed by rules
+    - Discard any salt/solvate compounds
+    - Return standardised parent
+    :param smiles:
+    :return:
+    '''
+
+    try:
+
+        parent = standardise.run(smiles)
+
+    except (standardise.StandardiseException, TypeError) as e:
+
+        # print(f'SMILES standardisation warning: {e.message}')
+        return None
+
+    return parent
+
+
+def standardise_SMILES(smiles: str) -> str:
+    '''
+    Use rdkit sanitzation procedure to standardise molecule and resolve to parent fragment.
+    :param smiles:
+    :return:
+    '''
+    try:
+        mol = Chem.MolFromSmiles(smiles, sanitize=True)
+        Chem.SanitizeMol(mol)
+        parent_clean_mol = rdMolStandardize.FragmentParent(mol)
+
+        return Chem.MolToSmiles(parent_clean_mol, isomericSmiles=True)
+    except:
+        return None
 
 
 def resolve_cas_to_smiles(cas_id: str):
@@ -216,7 +265,7 @@ def fill_match_ids(df: pd.DataFrame, given_col: str) -> pd.DataFrame:
     mapping1 = {}
     mapping2 = {}
     for index, row in df.iterrows():
-        if row[given_col] == row[given_col]: # If not nan
+        if row[given_col] == row[given_col]:  # If not nan
             if row[cols_to_do[0]] == row[cols_to_do[0]]:
                 mapping1[row[cols_to_do[0]]] = row[given_col]
             if row[cols_to_do[1]] == row[cols_to_do[1]]:

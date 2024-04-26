@@ -9,6 +9,8 @@ setup(
         'pandas',
         'numpy',
         'tqdm',
+        'rdkit',
+        'standardiser',
         'wcvpy>=1.3.2'
     ],
     extras_require={'knapsack': ["html5lib", 'beautifulsoup4', 'cirpy'],

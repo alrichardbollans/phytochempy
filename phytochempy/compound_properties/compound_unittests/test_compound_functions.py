@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from phytochempy.compound_properties import resolve_cas_to_smiles, simplify_inchi_key, resolve_cas_to_inchikey, get_smiles_and_inchi_from_cas_ids, \
-    add_CAS_ID_translations_to_df, fill_match_ids
+    add_CAS_ID_translations_to_df, fill_match_ids, standardise_smiles_to_MAIP_smiles, standardise_SMILES
 
 
 class CASresolve(unittest.TestCase):
@@ -109,7 +109,24 @@ class TestFillIds(unittest.TestCase):
         df_empty = pd.DataFrame(columns=['SMILES', 'InChIKey', 'CAS ID'])
         actual_df = fill_match_ids(df=df_empty, given_col='CAS ID')
         pd.testing.assert_frame_equal(actual_df, df_empty)
+class TestStandardiseSmiles(unittest.TestCase):
+    def test_standardise_smiles_valid(self):
+        self.assertEqual(standardise_smiles_to_MAIP_smiles('CO'), 'CO')
+        self.assertEqual(standardise_smiles_to_MAIP_smiles("[Na]OC(=O)Cc1ccc(C[NH3+])cc1.c1nnn[n-]1.O"), 'NCc1ccc(CC(=O)O)cc1')
 
+    def test_standardise_smiles_invalid(self):
+        self.assertEqual(standardise_smiles_to_MAIP_smiles('Not a SMILES'), None)
+        self.assertEqual(standardise_smiles_to_MAIP_smiles('NotaSMILES'), None)
+        self.assertEqual(standardise_smiles_to_MAIP_smiles(None), None)
 
+class TestrdkitStandardiseSmiles(unittest.TestCase):
+    def test_standardise_smiles_valid(self):
+        self.assertEqual(standardise_SMILES('CO'), 'CO')
+        self.assertEqual(standardise_SMILES("[Na]OC(=O)Cc1ccc(C[NH3+])cc1.c1nnn[n-]1.O"), '[NH3+]Cc1ccc(CC(=O)[O-])cc1')
+
+    def test_standardise_smiles_invalid(self):
+        self.assertEqual(standardise_SMILES('Not a SMILES'), None)
+        self.assertEqual(standardise_SMILES('NotaSMILES'), None)
+        self.assertEqual(standardise_SMILES(None), None)
 if __name__ == '__main__':
     unittest.main()

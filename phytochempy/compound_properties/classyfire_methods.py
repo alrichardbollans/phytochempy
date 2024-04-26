@@ -135,11 +135,11 @@ def get_classyfire_classes_from_df(df: pd.DataFrame, smiles_col: str, tempout_di
     # Note to use https://cfb.fiehnlab.ucdavis.edu/ if this breaks
     # Server was down as of 13/12/23
     classyfire_info = get_classyfire_classes_from_smiles(df[smiles_col].dropna(), tempout_dir)
-    classyfire_info = classyfire_info.rename(columns={'original_SMILES': 'SMILES'})
+    classyfire_info = classyfire_info.rename(columns={'original_SMILES': smiles_col})
 
     classyfire_info[
-        ['SMILES', 'classyfire_SMILES'] + CLASSYFIRE_OUTPUT_COLUMNS].drop_duplicates(keep='first').dropna(subset='SMILES')
+        [smiles_col, 'classyfire_SMILES'] + CLASSYFIRE_OUTPUT_COLUMNS].drop_duplicates(keep='first').dropna(subset=smiles_col)
 
-    all_metabolites_with_class_info = pd.merge(df, classyfire_info, how='left', on='SMILES')
+    all_metabolites_with_class_info = pd.merge(df, classyfire_info, how='left', on=smiles_col)
 
     return all_metabolites_with_class_info

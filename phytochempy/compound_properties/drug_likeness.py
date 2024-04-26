@@ -83,6 +83,6 @@ def add_bioavailability_rules_to_df(df: pd.DataFrame, smiles_col: str) -> pd.Dat
     bio_av = get_bioavailability_rules(df, smiles_col)
     bio_av = bio_av.dropna(subset=[smiles_col])
 
-    all_metabolites_with_info = pd.merge(df, bio_av, how='left', on='SMILES')
+    all_metabolites_with_info = pd.merge(df, bio_av, how='left', on=smiles_col)
 
     return all_metabolites_with_info

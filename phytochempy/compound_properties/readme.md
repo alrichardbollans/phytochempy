@@ -37,7 +37,7 @@ with_npclass_classes = get_npclassifier_classes_from_df(all_compounds_in_taxa, '
 
 update_compound_info_from_chembl_apm_assays()
 with_chembl_data = add_chembl_apm_data_to_compound_df(with_npclass_classes, output_csv=os.path.join(temp_outputs_folder, 'chembl.csv'), compound_id_col=comp_id_column)
-with_bioavailibility = add_bioavailability_rules_to_df(with_chembl_data, os.path.join(tidied_outputs_folder, 'bioavailibility.csv'))
+with_bioavailibility = add_bioavailability_rules_to_df(with_chembl_data, 'SMILES')
 # with_bioavailibility = pd.read_csv(os.path.join(tidied_outputs_folder, 'bioavailibility.csv'), index_col=0)
 # Issues with classyfire servers
 # with_classyfire_classes = add_classyfire_info(with_chembl_data, temp_outputs_folder, os.path.join(tidied_outputs_folder, 'classyfire.csv'))
