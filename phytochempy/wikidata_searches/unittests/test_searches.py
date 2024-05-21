@@ -2,7 +2,7 @@ import os.path
 import unittest
 
 import pandas as pd
-from phytochempy.wikidata_searches import tidy_wikidata_output, generate_wikidata_search_query, submit_query
+from phytochempy.wikidata_searches import tidy_wikidata_output, generate_wikidata_search_query, submit_query, get_wikidata_id_for_taxon
 
 
 class TestTidyWikidataOutput(unittest.TestCase):
@@ -26,12 +26,28 @@ class TestTidyWikidataOutput(unittest.TestCase):
 
     def test_querying(self):
         my_query = generate_wikidata_search_query('Q1073514', 10)
-        submit_query(my_query, 'wikidata_search.csv',10)
+        submit_query(my_query, 'wikidata_search.csv', 10)
 
         output_df = pd.read_csv('wikidata_search.csv', index_col=0)
-        correct_df = pd.read_csv(self.manual_test_query)
+        correct_df = pd.read_csv(self.manual_test_query, index_col=0)
         output_df = output_df[correct_df.columns]
         pd.testing.assert_frame_equal(output_df, correct_df)
+
+
+class TestGettingID(unittest.TestCase):
+    def test_examples(self):
+        examples = {'Google': ['Q95', 'Q961680', 'Q110997421', 'Q125851407'], 'Pandanaceae': ['Q736182'], 'Gentianales': ['Q21754']}
+        for e in examples:
+            self.assertEqual(get_wikidata_id_for_taxon(e), examples[e])
+
+    def test_bad_examples(self):
+
+        try:
+            get_wikidata_id_for_taxon(None)
+        except TypeError:
+            print('passed')
+        self.assertEqual(get_wikidata_id_for_taxon('None)'), [])
+
 
 if __name__ == "__main__":
     unittest.main()

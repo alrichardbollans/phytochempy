@@ -116,3 +116,47 @@ def get_wikidata(wiki_data_id: str, temp_output_csv: str, tidied_output_csv: str
     my_query = generate_wikidata_search_query(wiki_data_id, limit)
     submit_query(my_query, temp_output_csv, limit)
     tidy_wikidata_output(temp_output_csv, tidied_output_csv)
+
+
+def get_wikidata_id_for_taxon(taxon: str, language: str = 'en'):
+    """
+    :param taxon: The name of the taxon for which you want to retrieve the Wikidata ID.
+    :param language: The language code for the taxon name. Default is 'en' (English).
+    :return: A list of Wikidata IDs for the specified taxon and language.
+
+    This method retrieves the Wikidata ID(s) for a given taxon name and language using the Wikidata SPARQL endpoint.
+    Not currently implemented in the pipeline as there is ambiguity.
+    """
+    query_string = "SELECT ?item WHERE { ?item rdfs:label '" + taxon + "'@" + language + " }"
+    time.sleep(5)  # Rate limiting
+    # Define the SPARQL endpoint URL
+    endpoint_url = "https://query.wikidata.org/sparql"
+
+    # Prepare the headers and parameters for the POST request
+    headers = {"Accept": "application/sparql-results+json"}
+    params = {"query": query_string}
+
+    # Send the POST request to the SPARQL endpoint
+    response = requests.post(endpoint_url, headers=headers, params=params)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Parse the JSON response
+        data = response.json()
+
+        # Extract the results
+        results = data['results']['bindings']
+        if len(results) > 1:
+            print(f'WARNING: Multiple Wikidata IDs returned for {taxon}')
+        elif len(results) < 1:
+            print(f'WARNING: No Wikidata IDs returned for {taxon}')
+            return []
+        outputs = []
+        for result in results:
+            out = result['item']['value']
+
+            out.replace('http://www.wikidata.org/entity/', '')
+            outputs.append(out.replace('http://www.wikidata.org/entity/', ''))
+        return outputs
+    else:
+        raise ValueError("Wikidata response error. Code:", response.status_code)
