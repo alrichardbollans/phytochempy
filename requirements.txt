@@ -1,0 +1,9 @@
+pandas
+requests
+tqdm
+wcvpy
+numpy
+typing
+rdkit
+standardiser
+setuptools
