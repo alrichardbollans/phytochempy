@@ -4,6 +4,7 @@ tqdm
 wcvpy
 numpy
 typing
+CIRpy
 rdkit
 standardiser
 setuptools
