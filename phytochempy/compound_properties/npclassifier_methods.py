@@ -24,6 +24,18 @@ def get_npclassifier_result_columns_in_df(df: pd.DataFrame) -> List[str]:
     return out
 
 
+def get_npclassifier_pathway_columns_in_df(df: pd.DataFrame) -> List[str]:
+    """
+    :param df: A pandas DataFrame containing NPclassifier result columns.
+    :return: A list of pathway columns in the given DataFrame.
+    """
+    pathway_cols = get_npclassifier_result_columns_in_df(df)
+    cols = []
+    for p in pathway_cols:
+        if 'pathway' in p and p != 'NPclassif_pathway_results':
+            cols.append(p)
+    return cols
+
 def npclassify_smiles(smiles: str) -> dict:
     # From https://ccms-ucsd.github.io/GNPSDocumentation/api/
     # Function to classify a single SMILES string

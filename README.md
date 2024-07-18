@@ -70,7 +70,8 @@ Databases for Multifaceted Plant Research,” Plant Cell Physiol., 53, e1(1-12),
 
 Denny Vrandečić and Markus Krötzsch, ‘Wikidata: A Free Collaborative Knowledgebase’, Communications of the ACM 57, no. 10 (2014): 78–85.
 
-and related initiative:
+and related LOTUS initiative:
+
 Adriano Rutz, Maria Sorokina, Jakub Galgonek, Daniel Mietchen, Egon Willighagen, Arnaud Gaudry, James G Graham,
 Ralf Stephan, Roderic Page, Jiří Vondrášek, Christoph Steinbeck, Guido F Pauli, Jean-Luc Wolfender, Jonathan Bisson,
 Pierre-Marie Allard (2022)
@@ -85,6 +86,7 @@ Hyun Woo Kim et al., ‘NPClassifier: A Deep Neural Network-Based Structural Cla
 Journal of Natural Products 84, no. 11 (26 November 2021): 2795–2807, https://doi.org/10.1021/acs.jnatprod.1c00399.
 
 GNPS Workflow:
+
 Wang, Mingxun, Jeremy J. Carver, Vanessa V. Phelan, Laura M. Sanchez, Neha Garg, Yao Peng, Don Duy Nguyen et al. 'Sharing and community curation of
 mass spectrometry data with Global Natural Products Social Molecular Networking.' Nature biotechnology 34, no. 8 (2016): 828-837.
 
@@ -99,11 +101,13 @@ http://classyfire.wishartlab.com
 The data supplied with the package was accessed 13/12/2023.
 
 ChEMBL Database:
+
 Mendez D, Gaulton A, Bento AP, Chambers J, De Veij M, Félix E, Magariños MP, Mosquera JF, Mutowo P, Nowotka M, Gordillo-Marañón M, Hunter F, Junco L,
 Mugumbate G, Rodriguez-Lopez M, Atkinson F, Bosc N, Radoux CJ, Segura-Cabrera A, Hersey A, Leach AR. (2019) 'ChEMBL: towards direct deposition of
 bioassay data.' Nucleic Acids Res., 47(D1) D930-D940.
 
 ChEMBL Web Services:
+
 Davies M, Nowotka M, Papadatos G, Dedman N, Gaulton A, Atkinson F, Bellis L, Overington JP. (2015) 'ChEMBL web services: streamlining access to drug
 discovery data and utilities.' Nucleic Acids Res., 43(W1) W612-W620.
 
@@ -115,18 +119,26 @@ Journal of Cheminformatics 13, no. 1 (December 2021): 13, https://doi.org/10.118
 ##### Resolving CAS IDs
 
 CIRpy: https://github.com/mcs07/CIRpy was used to resolve given CAS Registry IDs:
+
 CAS, ‘CAS Registry System’, Journal of Chemical Information and Computer Sciences 18, no. 1 (1978): 58–58, https://doi.org/10.1021/ci60013a609
 using the NCI/CADD Chemical Identifier Resolver:https://cactus.nci.nih.gov/chemical/structure
 
 #### Bioavailability Metrics
 
 Veber:
+
 Daniel F. Veber et al., ‘Molecular Properties That Influence the Oral Bioavailability of Drug Candidates’, Journal of Medicinal Chemistry 45, no. 12 (
 1 June 2002): 2615–23, https://doi.org/10.1021/jm020017n.
 
 Lipinski:
+
 Christopher A Lipinski et al., ‘Experimental and Computational Approaches to Estimate Solubility and Permeability in Drug Discovery and Development
 Settings’, Advanced Drug Delivery Reviews 23, no. 1–3 (1997): 3–25.
 
 Tool:
+
 RDKit: Open-source cheminformatics. https://www.rdkit.org
+
+#### Diversity Measures
+
+See publication --- 
