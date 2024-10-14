@@ -79,10 +79,11 @@ def get_pathway_based_diversity_measures(measure_df: pd.DataFrame, pathways: lis
         measure_df['number_of_apparent_categories'] = measure_df['number_of_apparent_categories'] + measure_df[
             f'binary_identified_as_{pathway}']
 
-    ## Pielou index normalises by the 'richness' for the given genus, i.e. the number of different pathways present
+    ## Pielou index measures evenness of the classes
+    ## It normalises H by the 'richness' for the given genus, i.e. the number of different pathways present
     ## as discussed in corre_evaluation_2023.
+    ## Where number_of_apparent_categories =1, this is left undefined
     measure_df['J'] = measure_df['H'] / (np.log(measure_df['number_of_apparent_categories']))
-    measure_df['J'] = measure_df['J'].fillna(measure_df['H'])
 
     measure_df = measure_df[[taxon_name_col, 'H', 'Hbc', 'G', 'J']]
     from sklearn.preprocessing import MinMaxScaler
