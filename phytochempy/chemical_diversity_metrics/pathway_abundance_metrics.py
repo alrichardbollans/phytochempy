@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-def get_pathway_based_diversity_measures(measure_df: pd.DataFrame, pathways: list, taxon_name_col: str = 'Genus') -> pd.DataFrame:
+def get_pathway_based_diversity_measures(measure_df: pd.DataFrame, pathways: list, taxon_grouping: str = 'Genus') -> pd.DataFrame:
     """
 
     This method calculates various diversity measures for pathways based on a given DataFrame.
@@ -11,7 +11,7 @@ def get_pathway_based_diversity_measures(measure_df: pd.DataFrame, pathways: lis
 
     Parameters:
     - measure_df: A pandas DataFrame containing the data for diversity measures. The DataFrame must have the following columns:
-        - taxon_name_col: The names of the taxa, not used in these calculations but kept for output
+        - taxon_grouping: The names of the groups, not used in these calculations but kept for output
         - 'mean_identified_as_{pathway}': The mean number of identified compounds for each pathway.
         - 'identified_{pathway}_count': The count of identified compounds for each pathway.
         - 'identified_compounds_count': The total count of identified compounds.
@@ -85,11 +85,6 @@ def get_pathway_based_diversity_measures(measure_df: pd.DataFrame, pathways: lis
     ## Where number_of_apparent_categories =1, this is left undefined
     measure_df['J'] = measure_df['H'] / (np.log(measure_df['number_of_apparent_categories']))
 
-    measure_df = measure_df[[taxon_name_col, 'H', 'Hbc', 'G', 'J']]
-    from sklearn.preprocessing import MinMaxScaler
-    for index in ['H', 'Hbc', 'G', 'J']:
-        scaler = MinMaxScaler()
-        measure_df[index + '_minmax'] = scaler.fit_transform(measure_df[[index]])
-        print(index)
+    measure_df = measure_df[[taxon_grouping, 'H', 'Hbc', 'G', 'J']]
 
     return measure_df

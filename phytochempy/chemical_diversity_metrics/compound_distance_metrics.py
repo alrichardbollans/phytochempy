@@ -1,7 +1,6 @@
 import pandas as pd
 
 
-
 def _get_pairwise_distances_from_data(df: pd.DataFrame):
     """
     Calculate pairwise distances between molecules in a DataFrame, based on SMILES strings in 'Standard_SMILES' column.
@@ -41,14 +40,15 @@ def calculate_FAD_measures(df: pd.DataFrame, taxon_grouping: str = 'Genus'):
     This method calculates FAD-related measures for each unique taxon in a given DataFrame.
 
     Parameters:
-    - df (pd.DataFrame): The input DataFrame containing taxon data.
+    - df (pd.DataFrame): The input DataFrame containing a 'taxon_grouping' column by which compounds are grouped and a Standard_SMILES column
+    for compounds.
     - taxon_grouping (str): The column name in the DataFrame that represents the taxonomic grouping. Default is 'Genus'.
 
     Returns:
-    - pd.DataFrame: A DataFrame containing the FAD measures for each taxon.
+    - pd.DataFrame: A DataFrame containing the FAD measures for each group.
 
     Raises:
-    - ValueError: If there is a taxon with only one compound.
+    - ValueError: If there is a group with only one compound.
 
     """
     FAD_outputs = {}
@@ -76,12 +76,6 @@ def calculate_FAD_measures(df: pd.DataFrame, taxon_grouping: str = 'Genus'):
     out_df['MFAD'] = MFAD_outputs.values()
     out_df['APWD'] = APWD_outputs.values()
     out_df['N'] = N_outputs.values()
-
-    from sklearn.preprocessing import MinMaxScaler
-    for index in ['MFAD', 'APWD', 'FAD']:
-        scaler = MinMaxScaler()
-        out_df[index + '_minmax'] = scaler.fit_transform(out_df[[index]])
-        print(index)
 
     out_df = out_df.reset_index(names=[taxon_grouping])
     return out_df
