@@ -5,6 +5,9 @@ def _get_pairwise_distances_from_data(df: pd.DataFrame):
     """
     Calculate pairwise distances between molecules in a DataFrame, based on SMILES strings in 'Standard_SMILES' column.
 
+    Assuming distances are symmetric, this calculates the lower triangle elements of the symmetric distance matrix.
+    To calculate for all distances, multiply by 2.
+
     Using rdkit (Tool: RDKit: Open-source cheminformatics. https://www.rdkit.org), distances are calculated using the Tanimoto metric
     (Tanimoto TT (17 Nov 1958). "An Elementary Mathematical theory of Classification and Prediction". Internal IBM Technical Report. 1957)
 
@@ -59,10 +62,15 @@ def calculate_FAD_measures(df: pd.DataFrame, taxon_grouping: str = 'Genus'):
         taxon_data = df[df[taxon_grouping] == taxon]
         if len(taxon_data) > 1:
             distances = _get_pairwise_distances_from_data(taxon_data)
-            FAD_outputs[taxon] = distances.sum()
-            MFAD_outputs[taxon] = distances.sum() / len(taxon_data)
-            APWD_outputs[taxon] = distances.sum() / len(distances)
-            N_outputs[taxon] = len(taxon_data)
+            FAD = distances.sum() * 2
+            FAD_outputs[taxon] = FAD
+
+            N = len(taxon_data)
+            MFAD_outputs[taxon] = FAD / N
+
+
+            APWD_outputs[taxon] = FAD / (N**2)
+            N_outputs[taxon] = N
         else:
             # FAD_outputs[taxon] = 0
             # MFAD_outputs[taxon] = 0
