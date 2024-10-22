@@ -27,6 +27,8 @@ def merge_and_tidy_compound_datasets(datasets: List[pd.DataFrame], output_csv: s
 
     all_metabolites_in_taxa = all_metabolites_in_taxa[output_columns]
     print('Standardising SMILES')
+    if 'Standard_SMILES' in all_metabolites_in_taxa.columns:
+        raise ValueError(f'Standard_SMILES column already present in data.')
     all_metabolites_in_taxa['Standard_SMILES'] = all_metabolites_in_taxa['SMILES'].apply(standardise_SMILES)
     print('Getting MAIP standardisation of SMILES')
     all_metabolites_in_taxa['MAIP_SMILES'] = all_metabolites_in_taxa['SMILES'].apply(standardise_smiles_to_MAIP_smiles)
@@ -88,10 +90,9 @@ def _checks(df):
             f'WARNING: Same some compounds with same InChIsimp and different smiles. See {os.path.join(_temp_output_path, "same_inchisimp_diff_smiles.csv")}')
 
 
-def tidy_final_dataset(pre_final_df: pd.DataFrame, _temp_output_path: str, final_taxa_compound_csv: str, compound_id_col: str) -> None:
+def tidy_final_dataset(pre_final_df: pd.DataFrame, final_taxa_compound_csv: str, compound_id_col: str) -> None:
     """
     :param pre_final_df: A pandas DataFrame containing the pre-final dataset.
-    :param _temp_output_path: The path to temporarily store the output.
     :param final_taxa_compound_csv: The path to save the final taxa compound CSV file.
     :param compound_id_col: The column name of the compound ID in the DataFrame.
     :return: None

@@ -70,16 +70,18 @@ def get_knapsack_compounds_in_family(family: str, temp_output_csv: str):
             genus_table = get_knapsack_compounds_for_taxon(genus)
             if len(genus_table.index) > 0:
                 all_genera_df = pd.concat([all_genera_df, genus_table])
-        except:
+        except Exception as e:
+            print(e)
             failed_genera.append(genus)
 
-    all_genera_df['Source'] = 'KNApSAcK'
 
-    all_genera_df.to_csv(temp_output_csv)
     if len(failed_genera) > 0:
         print('WARNING: Searching for the following genera raised an error and should be manually checked:')
         print(failed_genera)
         raise ValueError
+
+    all_genera_df['Source'] = 'KNApSAcK'
+    all_genera_df.to_csv(temp_output_csv)
 
 
 def tidy_knapsack_results(knapsack_results_csv: str, output_csv: str, family: str, cirpy_cache_dir: str = None, manual_resolution_csv: str = None,
@@ -146,7 +148,7 @@ def get_knapsack_data(families_of_interest: list, temp_output_path: str, tidied_
     :param add_smiles_and_inchi: Optional. Specifies whether to add SMILES and InChI information to the tidied output. Defaults to True.
     :return: None
     """
-
+    import html5lib # Add this requirement here as its a common error
     def _temp_out_for_fam(faml: str) -> str:
         return os.path.join(temp_output_path, faml + '_kn_search.csv')
 

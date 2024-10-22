@@ -37,7 +37,7 @@ def _get_pairwise_distances_from_data(df: pd.DataFrame):
     return distmat
 
 
-def calculate_FAD_measures(df: pd.DataFrame, taxon_grouping: str = 'Genus'):
+def calculate_FAD_measures(df: pd.DataFrame, taxon_grouping: str):
     """
 
     This method calculates FAD-related measures for each unique taxon in a given DataFrame.
@@ -54,6 +54,11 @@ def calculate_FAD_measures(df: pd.DataFrame, taxon_grouping: str = 'Genus'):
     - ValueError: If there is a group with only one compound.
 
     """
+
+    duplicate_issues = df[df.duplicated(subset=['Standard_SMILES', taxon_grouping])]
+    if len(duplicate_issues)>0:
+        print(f'WARNING: Standard_SMILES records are duplicated within the grouping of {taxon_grouping}, is this intended?')
+
     FAD_outputs = {}
     MFAD_outputs = {}
     APWD_outputs = {}

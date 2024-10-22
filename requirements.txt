@@ -1,6 +1,7 @@
 pandas
 requests
 tqdm
+html5lib
 wcvpy
 numpy
 typing

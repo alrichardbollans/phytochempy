@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-def get_pathway_based_diversity_measures(measure_df: pd.DataFrame, pathways: list, taxon_grouping: str = 'Genus') -> pd.DataFrame:
+def get_pathway_based_diversity_measures(measure_df: pd.DataFrame, pathways: list, taxon_grouping: str) -> pd.DataFrame:
     """
 
     This method calculates various diversity measures for pathways based on a given DataFrame.

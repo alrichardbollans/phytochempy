@@ -4,7 +4,9 @@ A python package to download and enrich phytochemical data
 
 ## Installation
 
-With pip, run:
+This library requires `wcvpy>=1.3.2`, to install see https://github.com/alrichardbollans/wcvpy
+
+To install phytochempy with pip, run:
 
 `pip install git+https://github.com/alrichardbollans/phytochempy.git@1.0`
 
