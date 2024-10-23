@@ -13,6 +13,8 @@ def merge_and_tidy_compound_datasets(datasets: List[pd.DataFrame], output_csv: s
     """
     Given datasets from WikiData and Knapsack, merge them and tidy them.
 
+    Adds a 'Genus' column by applying the 'get_genus_from_full_name' function to the accepted name column.
+    A `Standard_SMILES` is calculated from the given SMILES strings in the data using rdkit sanitization to standardise molecules and resolve to parent fragments.
     :param datasets: A list of datasets to merge.
     :param output_csv: The path to the output CSV file.
     :return: The merged and tidied dataset.
@@ -44,6 +46,10 @@ def merge_and_tidy_compound_datasets(datasets: List[pd.DataFrame], output_csv: s
         all_metabolites_in_taxa = fill_match_ids(all_metabolites_in_taxa, c_id)
 
     all_metabolites_in_taxa['InChIKey_simp'] = all_metabolites_in_taxa['InChIKey'].apply(simplify_inchi_key)
+
+    # Add genus column
+    all_metabolites_in_taxa['Genus'] = all_metabolites_in_taxa[wcvp_accepted_columns['name']].apply(
+        get_genus_from_full_name)
     all_metabolites_in_taxa.to_csv(output_csv)
     return all_metabolites_in_taxa
 
@@ -59,7 +65,7 @@ def get_manual_MAIP_to_upload(df: pd.DataFrame, _temp_output_path):
     all_metabolites_to_send_to_maip.to_csv(os.path.join(_temp_output_path, 'smiles_for_MAIP.csv'))
 
 
-def add_manual_info_files(df: pd.DataFrame, maip_output_file: str = None):
+def add_manual_info_files(df: pd.DataFrame, maip_output_file: str):
     all_metabolites_with_info = df.copy(deep=True)
 
     if maip_output_file is not None:
@@ -90,7 +96,7 @@ def _checks(df):
             f'WARNING: Same some compounds with same InChIsimp and different smiles. See {os.path.join(_temp_output_path, "same_inchisimp_diff_smiles.csv")}')
 
 
-def tidy_final_dataset(pre_final_df: pd.DataFrame, final_taxa_compound_csv: str, compound_id_col: str) -> None:
+def tidy_final_dataset(pre_final_df: pd.DataFrame, final_taxa_compound_csv: str, compound_id_col: str, taxon_grouping:str) -> None:
     """
     :param pre_final_df: A pandas DataFrame containing the pre-final dataset.
     :param final_taxa_compound_csv: The path to save the final taxa compound CSV file.
@@ -98,22 +104,18 @@ def tidy_final_dataset(pre_final_df: pd.DataFrame, final_taxa_compound_csv: str,
     :return: None
 
     Tidies the pre-final dataset by dropping rows with missing values in the compound ID column or plant accepted name column.
-    Adds a 'Genus' column by applying the 'get_genus_from_full_name' function to the accepted name column.
     Drops duplicate rows based on the compound ID and compound name with author columns.
     Sorts the DataFrame by plant name with author and compound name column. Saves the sorted DataFrame to a CSV file.
     """
     ## Tidy data a bit
-    pre_final_df = pre_final_df.dropna(subset=[compound_id_col, wcvp_accepted_columns['name_w_author']], how='any')
-    # Add genus column
-    pre_final_df['Genus'] = pre_final_df[wcvp_accepted_columns['name']].apply(
-        get_genus_from_full_name)
+    pre_final_df = pre_final_df.dropna(subset=[compound_id_col, taxon_grouping], how='any')
 
     def drop_repeat_id(df, id_col):
         # Remove known duplicates according to ID
-        df = df[df[id_col].isna() | (~df.duplicated(subset=[id_col, wcvp_accepted_columns['name_w_author']], keep='first'))]
+        df = df[df[id_col].isna() | (~df.duplicated(subset=[id_col, taxon_grouping], keep='first'))]
         return df
 
     pre_final_df = drop_repeat_id(pre_final_df, compound_id_col)
-    taxa_with_all_info = pre_final_df.sort_values(by=[wcvp_accepted_columns['name_w_author'], COMPOUND_NAME_COLUMN]).reset_index(drop=True)
+    taxa_with_all_info = pre_final_df.sort_values(by=[taxon_grouping, COMPOUND_NAME_COLUMN]).reset_index(drop=True)
 
     taxa_with_all_info.to_csv(final_taxa_compound_csv)
