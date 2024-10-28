@@ -14,7 +14,8 @@ from tqdm import tqdm
 _NP_CLASSIFIER_COLUMNS = [
     'NPclassif_class_results', 'NPclassif_superclass_results',
     'NPclassif_pathway_results', 'NPclassif_isglycoside']
-
+NP_PATHWAYS = ['Terpenoids', 'Fatty acids', 'Polyketides', 'Carbohydrates', 'Amino acids and Peptides', 'Shikimates and Phenylpropanoids',
+               'Alkaloids']
 
 def get_npclassifier_result_columns_in_df(df: pd.DataFrame) -> List[str]:
     out = []
@@ -26,6 +27,8 @@ def get_npclassifier_result_columns_in_df(df: pd.DataFrame) -> List[str]:
 
 def get_npclassifier_pathway_columns_in_df(df: pd.DataFrame) -> List[str]:
     """
+    Returns the individualised pathway information columns in the dataframe.
+
     :param df: A pandas DataFrame containing NPclassifier result columns.
     :return: A list of pathway columns in the given DataFrame.
     """
@@ -127,6 +130,14 @@ def get_npclassif_classes_from_smiles(smiles: List[str], npclassifier_cache_dir:
         df = df[['npSMILES']].dropna().drop_duplicates(
             keep='first')
         df.to_csv(failed_file)
+
+    # Check pathways match with NP_PATHWAYS
+    pathway_columns = get_npclassifier_pathway_columns_in_df(out_df)
+
+    for p in pathway_columns:
+        vals = out_df[p].dropna().unique()
+        for v in vals:
+            assert v in NP_PATHWAYS
     return out_df
 
 

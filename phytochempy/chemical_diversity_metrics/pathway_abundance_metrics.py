@@ -3,11 +3,8 @@ import pandas as pd
 from pandas import DataFrame
 from typing import Any
 
-from phytochempy.compound_properties import get_npclassifier_pathway_columns_in_df
+from phytochempy.compound_properties import get_npclassifier_pathway_columns_in_df, NP_PATHWAYS
 from phytochempy.data_compilation_utilities import get_pathway_version_resolved_at_taxon_level
-
-NP_PATHWAYS = ['Terpenoids', 'Fatty_acids', 'Polyketides', 'Carbohydrates', 'Amino_acids_and_Peptides', 'Shikimates_and_Phenylpropanoids',
-               'Alkaloids']
 
 
 def split_multiple_pathways_into_duplicate_rows(df: pd.DataFrame) -> pd.DataFrame:
@@ -55,7 +52,7 @@ def split_multiple_pathways_into_duplicate_rows(df: pd.DataFrame) -> pd.DataFram
         return df
 
 
-def get_group_level_version_for_all_pathways(df: pd.DataFrame, taxon_grouping, use_distinct: bool = False) -> pd.DataFrame:
+def get_group_level_version_for_all_pathways(df: pd.DataFrame, compound_grouping, use_distinct: bool = False) -> pd.DataFrame:
     '''## Generate group data for all pathways
 
     ## 'Distinct' Pathway data splits compounds into multiple rows if they are associated with multiple compounds
@@ -63,7 +60,7 @@ def get_group_level_version_for_all_pathways(df: pd.DataFrame, taxon_grouping, u
     ## Else 'nondistinct' pathway data should be used.
 
     - returns A pandas DataFrame containing the data for diversity measures. The DataFrame has the following columns:
-        - taxon_grouping: The names of the groups, not used in these calculations but kept for output
+        - compound_grouping: The names of the groups, not used in these calculations but kept for output
         - 'mean_identified_as_{pathway}': The mean number of identified compounds for each pathway.
         - 'identified_{pathway}_count': The count of identified compounds for each pathway.
         - 'identified_compounds_count': The total count of identified compounds.
@@ -76,15 +73,15 @@ def get_group_level_version_for_all_pathways(df: pd.DataFrame, taxon_grouping, u
         new_df = df.copy()
 
     out_df = pd.DataFrame()
-    out_df[taxon_grouping] = new_df[taxon_grouping].unique()
+    out_df[compound_grouping] = new_df[compound_grouping].unique()
     original_length = len(out_df)
 
     for pathway in NP_PATHWAYS:
-        group_pathway_df = get_pathway_version_resolved_at_taxon_level(new_df, pathway, taxon_grouping_col=taxon_grouping)
+        group_pathway_df = get_pathway_version_resolved_at_taxon_level(new_df, pathway, compound_grouping_col=compound_grouping)
         if 'identified_compounds_count' not in out_df.columns:
-            out_df = pd.merge(out_df, group_pathway_df, on=[taxon_grouping], how='left')
+            out_df = pd.merge(out_df, group_pathway_df, on=[compound_grouping], how='left')
         else:
-            out_df = pd.merge(out_df, group_pathway_df, on=[taxon_grouping, 'identified_compounds_count'], how='left')
+            out_df = pd.merge(out_df, group_pathway_df, on=[compound_grouping, 'identified_compounds_count'], how='left')
     assert len(out_df) == original_length
 
     return out_df
@@ -92,7 +89,7 @@ def get_group_level_version_for_all_pathways(df: pd.DataFrame, taxon_grouping, u
 
 def separate_into_pathway(df: pd.DataFrame, pathway: str) -> tuple[DataFrame, Any]:
     """
-    Separate the given DataFrame into two separate DataFrames based on a specified pathway.
+    Separate the given DataFrame into two separate DataFrames of positive and negative cases based on a specified pathway.
 
     :param df: The input DataFrame.
     :param pathway: The pathway to separate the DataFrame by.
@@ -145,7 +142,7 @@ def add_pathway_information_columns(df: pd.DataFrame, compound_id_col: str) -> p
     return df
 
 
-def get_pathway_based_diversity_measures(df: pd.DataFrame, taxon_grouping: str, compound_id_col: str) -> pd.DataFrame:
+def get_pathway_based_diversity_measures(df: pd.DataFrame, compound_grouping: str, compound_id_col: str) -> pd.DataFrame:
     """
 
     This method calculates various diversity measures for pathways based on a given DataFrame.
@@ -153,7 +150,7 @@ def get_pathway_based_diversity_measures(df: pd.DataFrame, taxon_grouping: str, 
     This could be refactored to be more user-friendly.
 
     Parameters:
-    - taxon_grouping: the column used to group compounds
+    - compound_grouping: the column used to group compounds
     - compound_id_col: the column id column, to determine compoun uniqueness
 
     Returns:
@@ -168,9 +165,17 @@ def get_pathway_based_diversity_measures(df: pd.DataFrame, taxon_grouping: str, 
 
     """
 
+    duplicate_issues = df[df.duplicated(subset=[compound_id_col, compound_grouping])]
+    if len(duplicate_issues) > 0:
+        print(f'WARNING: {compound_id_col} records are duplicated within the grouping of {compound_grouping}, duplicates will be removed for diversity calculations')
+
+        df = df.drop_duplicates(
+            subset=[compound_grouping, compound_id_col],
+            keep='first')
+
     group_compound_data_with_ohe_pathways = add_pathway_information_columns(df, compound_id_col)
 
-    measure_df = get_group_level_version_for_all_pathways(group_compound_data_with_ohe_pathways, taxon_grouping=taxon_grouping,
+    measure_df = get_group_level_version_for_all_pathways(group_compound_data_with_ohe_pathways, compound_grouping=compound_grouping,
                                                           use_distinct=True)
 
     ### Begin with Shannon index
@@ -221,6 +226,7 @@ def get_pathway_based_diversity_measures(df: pd.DataFrame, taxon_grouping: str, 
     ## Where number_of_apparent_categories =1, this is left undefined
     measure_df['J'] = measure_df['H'] / (np.log(measure_df['number_of_apparent_categories']))
 
-    measure_df = measure_df[[taxon_grouping, 'H', 'Hbc', 'G', 'J']]
+    measure_df = measure_df[[compound_grouping, 'H', 'Hbc', 'G', 'J', 'identified_compounds_count']]
+    measure_df = measure_df.rename(columns={'identified_compounds_count': 'GroupSize_Pathways'})
 
     return measure_df

@@ -96,7 +96,7 @@ def _checks(df):
             f'WARNING: Same some compounds with same InChIsimp and different smiles. See {os.path.join(_temp_output_path, "same_inchisimp_diff_smiles.csv")}')
 
 
-def tidy_final_dataset(pre_final_df: pd.DataFrame, final_taxa_compound_csv: str, compound_id_col: str, taxon_grouping:str) -> None:
+def tidy_final_dataset(pre_final_df: pd.DataFrame, final_taxa_compound_csv: str, compound_id_col: str, compound_grouping:str) -> None:
     """
     :param pre_final_df: A pandas DataFrame containing the pre-final dataset.
     :param final_taxa_compound_csv: The path to save the final taxa compound CSV file.
@@ -108,14 +108,14 @@ def tidy_final_dataset(pre_final_df: pd.DataFrame, final_taxa_compound_csv: str,
     Sorts the DataFrame by plant name with author and compound name column. Saves the sorted DataFrame to a CSV file.
     """
     ## Tidy data a bit
-    pre_final_df = pre_final_df.dropna(subset=[compound_id_col, taxon_grouping], how='any')
+    pre_final_df = pre_final_df.dropna(subset=[compound_id_col, compound_grouping], how='any')
 
     def drop_repeat_id(df, id_col):
         # Remove known duplicates according to ID
-        df = df[df[id_col].isna() | (~df.duplicated(subset=[id_col, taxon_grouping], keep='first'))]
+        df = df[df[id_col].isna() | (~df.duplicated(subset=[id_col, compound_grouping], keep='first'))]
         return df
 
     pre_final_df = drop_repeat_id(pre_final_df, compound_id_col)
-    taxa_with_all_info = pre_final_df.sort_values(by=[taxon_grouping, COMPOUND_NAME_COLUMN]).reset_index(drop=True)
+    taxa_with_all_info = pre_final_df.sort_values(by=[compound_grouping, COMPOUND_NAME_COLUMN]).reset_index(drop=True)
 
     taxa_with_all_info.to_csv(final_taxa_compound_csv)

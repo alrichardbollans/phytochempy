@@ -13,7 +13,7 @@ class MyTestCase(unittest.TestCase):
         self.df = pd.read_csv(os.path.join('inputs', 'Catalpa_bignonioides_deduplicated_data.csv'), index_col=0)
         self.COMPOUND_ID_COL = 'Standard_SMILES'
 
-        self.TAXON_GROUPING = 'accepted_species'
+        self.compound_grouping = 'accepted_species'
 
         # self.data_with_npclass_classes = get_npclassifier_classes_from_df(self.df, 'Standard_SMILES',
         #                                                              'temp_outputs')
@@ -24,12 +24,12 @@ class MyTestCase(unittest.TestCase):
         group_compound_data_with_ohe_pathways = add_pathway_information_columns(self.data_with_npclass_classes, self.COMPOUND_ID_COL)
 
         group_distinct_pathway_data = get_group_level_version_for_all_pathways(group_compound_data_with_ohe_pathways,
-                                                                               taxon_grouping=self.TAXON_GROUPING,
+                                                                               compound_grouping=self.compound_grouping,
                                                                                use_distinct=True)
 
-        abundance_diversity = get_pathway_based_diversity_measures(self.data_with_npclass_classes, self.TAXON_GROUPING, self.COMPOUND_ID_COL)
+        abundance_diversity = get_pathway_based_diversity_measures(self.data_with_npclass_classes, self.compound_grouping, self.COMPOUND_ID_COL)
 
-        assert len(abundance_diversity) == len(self.df[self.TAXON_GROUPING].unique().tolist())
+        assert len(abundance_diversity) == len(self.df[self.compound_grouping].unique().tolist())
         assert len(group_distinct_pathway_data) == len(abundance_diversity)
         assert len(group_compound_data_with_ohe_pathways) == len(self.df)
 

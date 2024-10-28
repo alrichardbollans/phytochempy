@@ -37,34 +37,50 @@ def _get_pairwise_distances_from_data(df: pd.DataFrame):
     return distmat
 
 
-def calculate_FAD_measures(df: pd.DataFrame, taxon_grouping: str):
+def remove_groups_with_single_compounds(working_data: pd.DataFrame, compound_grouping: str):
+    counts = working_data.value_counts(compound_grouping)
+    groups_with_single_compounds = pd.DataFrame({compound_grouping: counts.index, 'N': counts.values})
+    groups_with_single_compounds = groups_with_single_compounds[groups_with_single_compounds['N'] < 2][compound_grouping].values.tolist()
+
+    if len(groups_with_single_compounds) > 0:
+        print('Following groups have been removed from calculations as measures for groups containing single compounds are poorly defined.')
+        print(groups_with_single_compounds)
+
+    out_df = working_data[~working_data[compound_grouping].isin(groups_with_single_compounds)]
+    return out_df
+
+def calculate_FAD_measures(df: pd.DataFrame, compound_grouping: str):
     """
 
     This method calculates FAD-related measures for each unique taxon in a given DataFrame.
 
     Parameters:
-    - df (pd.DataFrame): The input DataFrame containing a 'taxon_grouping' column by which compounds are grouped and a Standard_SMILES column
+    - df (pd.DataFrame): The input DataFrame containing a 'compound_grouping' column by which compounds are grouped and a Standard_SMILES column
     for compounds.
-    - taxon_grouping (str): The column name in the DataFrame that represents the taxonomic grouping. Default is 'Genus'.
+    - compound_grouping (str): The column name in the DataFrame that represents the how compounds in the dataframe should be grouped.
 
     Returns:
     - pd.DataFrame: A DataFrame containing the FAD measures for each group.
 
-    Raises:
-    - ValueError: If there is a group with only one compound.
-
     """
 
-    duplicate_issues = df[df.duplicated(subset=['Standard_SMILES', taxon_grouping])]
+    duplicate_issues = df[df.duplicated(subset=['Standard_SMILES', compound_grouping])]
     if len(duplicate_issues)>0:
-        print(f'WARNING: Standard_SMILES records are duplicated within the grouping of {taxon_grouping}, is this intended?')
+        print(
+            f'WARNING: Standard_SMILES records are duplicated within the grouping of {compound_grouping}, duplicates will be removed for diversity calculations')
+
+        df = df.drop_duplicates(
+            subset=[compound_grouping, 'Standard_SMILES'],
+            keep='first')
+
+    df = remove_groups_with_single_compounds(df, compound_grouping)
 
     FAD_outputs = {}
     MFAD_outputs = {}
     APWD_outputs = {}
     N_outputs = {}
-    for taxon in df[taxon_grouping].unique():
-        taxon_data = df[df[taxon_grouping] == taxon]
+    for taxon in df[compound_grouping].unique():
+        taxon_data = df[df[compound_grouping] == taxon]
         if len(taxon_data) > 1:
             distances = _get_pairwise_distances_from_data(taxon_data)
             FAD = distances.sum() * 2
@@ -73,7 +89,7 @@ def calculate_FAD_measures(df: pd.DataFrame, taxon_grouping: str):
             N = len(taxon_data)
             MFAD_outputs[taxon] = FAD / N
 
-
+            assert len(distances)*2==N**2-N
             APWD_outputs[taxon] = FAD / (N**2)
             N_outputs[taxon] = N
         else:
@@ -81,14 +97,14 @@ def calculate_FAD_measures(df: pd.DataFrame, taxon_grouping: str):
             # MFAD_outputs[taxon] = 0
             # APWD_outputs[taxon] = 0
             # N_outputs[taxon] = len(taxon_data)
-            raise ValueError(f'Measures for taxa with single compounds are poorly defined. In this case for {taxon}'
+            raise ValueError(f'Measures for taxa with single compounds are poorly defined. In this case for taxon "{taxon}",'
                              f'Either remove these from your data, or make a pull request :)')
 
     out_df = pd.DataFrame.from_dict(FAD_outputs, orient='index', columns=['FAD'])
 
     out_df['MFAD'] = MFAD_outputs.values()
     out_df['APWD'] = APWD_outputs.values()
-    out_df['N'] = N_outputs.values()
+    out_df['GroupSize_FAD'] = N_outputs.values() # The size of the compound groups used in these calculations.
 
-    out_df = out_df.reset_index(names=[taxon_grouping])
+    out_df = out_df.reset_index(names=[compound_grouping])
     return out_df
