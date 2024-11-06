@@ -87,10 +87,13 @@ def calculate_FAD_measures(df: pd.DataFrame, compound_grouping: str):
             FAD_outputs[taxon] = FAD
 
             N = len(taxon_data)
+
+            number_of_distances = len(distances)*2
+            assert number_of_distances == N ** 2 - N
+
             MFAD_outputs[taxon] = FAD / N
 
-            assert len(distances) * 2 == N ** 2 - N
-            APWD_outputs[taxon] = FAD / (N ** 2)
+            APWD_outputs[taxon] = FAD / number_of_distances
             N_outputs[taxon] = N
         else:
             # FAD_outputs[taxon] = 0
