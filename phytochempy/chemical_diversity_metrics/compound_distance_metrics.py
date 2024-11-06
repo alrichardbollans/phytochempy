@@ -18,8 +18,7 @@ def _get_pairwise_distances_from_data(df: pd.DataFrame):
     np.ndarray: The pairwise distance matrix.
 
     Example:
-    df = pd.DataFrame({'Molecule': ['CCO', 'CCN', 'CCC'],
-                       'Standard_SMILES': ['C(C)O', 'C(C)N', 'C(C)C']})
+    df = pd.DataFrame({'Standard_SMILES': ['C(C)O', 'C(C)N', 'C(C)C']})
     distmat = _get_pairwise_distances_from_data(df)
     """
 
@@ -49,6 +48,7 @@ def remove_groups_with_single_compounds(working_data: pd.DataFrame, compound_gro
     out_df = working_data[~working_data[compound_grouping].isin(groups_with_single_compounds)]
     return out_df
 
+
 def calculate_FAD_measures(df: pd.DataFrame, compound_grouping: str):
     """
 
@@ -65,7 +65,7 @@ def calculate_FAD_measures(df: pd.DataFrame, compound_grouping: str):
     """
 
     duplicate_issues = df[df.duplicated(subset=['Standard_SMILES', compound_grouping])]
-    if len(duplicate_issues)>0:
+    if len(duplicate_issues) > 0:
         print(
             f'WARNING: Standard_SMILES records are duplicated within the grouping of {compound_grouping}, duplicates will be removed for diversity calculations')
 
@@ -89,8 +89,8 @@ def calculate_FAD_measures(df: pd.DataFrame, compound_grouping: str):
             N = len(taxon_data)
             MFAD_outputs[taxon] = FAD / N
 
-            assert len(distances)*2==N**2-N
-            APWD_outputs[taxon] = FAD / (N**2)
+            assert len(distances) * 2 == N ** 2 - N
+            APWD_outputs[taxon] = FAD / (N ** 2)
             N_outputs[taxon] = N
         else:
             # FAD_outputs[taxon] = 0
@@ -104,7 +104,7 @@ def calculate_FAD_measures(df: pd.DataFrame, compound_grouping: str):
 
     out_df['MFAD'] = MFAD_outputs.values()
     out_df['APWD'] = APWD_outputs.values()
-    out_df['GroupSize_FAD'] = N_outputs.values() # The size of the compound groups used in these calculations.
+    out_df['GroupSize_FAD'] = N_outputs.values()  # The size of the compound groups used in these calculations.
 
     out_df = out_df.reset_index(names=[compound_grouping])
     return out_df
