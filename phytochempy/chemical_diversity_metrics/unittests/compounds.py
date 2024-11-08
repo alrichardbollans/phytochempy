@@ -66,5 +66,13 @@ class MyTestCase(unittest.TestCase):
 
         assert AFADS['APWD'].iloc[0] == (distmatA.sum() * 2) / 6
         assert BFADS['APWD'].iloc[0] == (distmatB.sum() * 2) / 2
+
+    def test_examples(self):
+        # from Comastoma tenellum
+        df = pd.DataFrame({'Standard_SMILES': ['COc1cc(O)c2c(=O)c3c(O)c(OC)ccc3oc2c1', 'COc1cc(O)c2c(=O)c3c(OC)c(OC)ccc3oc2c1'], 'Groups': ['Comastoma tenellum', 'Comastoma tenellum']})
+        distmat = _get_pairwise_distances_from_data(df)
+
+        FADs = calculate_FAD_measures(df, 'Groups')
+        print(FADs)
 if __name__ == '__main__':
     unittest.main()
