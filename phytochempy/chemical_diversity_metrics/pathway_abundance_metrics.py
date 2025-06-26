@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
@@ -164,7 +165,6 @@ def get_pathway_based_diversity_measures(df: pd.DataFrame, compound_grouping: st
         - Pielou index (J)
 
     """
-
     duplicate_issues = df[df.duplicated(subset=[compound_id_col, compound_grouping])]
     if len(duplicate_issues) > 0:
         print(f'WARNING: {compound_id_col} records are duplicated within the grouping of {compound_grouping}, duplicates will be removed for diversity calculations')
@@ -179,20 +179,22 @@ def get_pathway_based_diversity_measures(df: pd.DataFrame, compound_grouping: st
                                                           use_distinct=True)
 
     ### Begin with Shannon index
-    measure_df['H'] = 0
-    for pathway in NP_PATHWAYS:
-        measure_df[f'ln_mean_identified_as_{pathway}'] = np.log(measure_df[f'mean_identified_as_{pathway}']).replace(-np.inf, 0)
-        measure_df['H'] = measure_df['H'] + measure_df[f'mean_identified_as_{pathway}'] * measure_df[
-            f'ln_mean_identified_as_{pathway}']
+    # Gather all relevant column names in advance for easy access
+    mean_cols = [f'mean_identified_as_{p}' for p in NP_PATHWAYS]
+    count_cols = [f'identified_{p}_count' for p in NP_PATHWAYS]
 
-    measure_df['H'] = -measure_df['H']
+    # ---- Shannon index (H) ----
+    mean_vals = measure_df[mean_cols]
+    ln_mean_vals = np.log(mean_vals).replace(-np.inf, 0)
+    shannon = -(mean_vals * ln_mean_vals).sum(axis=1)
+    measure_df['H'] = shannon
+
     ## Bias corrected shannon
     # From chao_nonparametric_2003, following beck_comparing_2010.
     # Note that there are updated metrics for calculating coverage e.g. chao_coveragebased_2012
-    measure_df['number_singletons'] = 0
-    for pathway in NP_PATHWAYS:
-        measure_df.loc[measure_df[f'identified_{pathway}_count'] == 1, 'number_singletons'] += 1
-    measure_df['sample_coverage'] = 1 - (measure_df['number_singletons'] / measure_df['identified_compounds_count'])
+    singletons = (measure_df[count_cols] == 1).sum(axis=1)
+    measure_df['number_singletons'] = singletons
+    measure_df['sample_coverage'] = 1 - (singletons / measure_df['identified_compounds_count'])
 
     measure_df['Hbc'] = 0
     for pathway in NP_PATHWAYS:
@@ -207,18 +209,11 @@ def get_pathway_based_diversity_measures(df: pd.DataFrame, compound_grouping: st
 
     # Simpson index also refered to as gini-simpson
     # Used in e.g. corre_evaluation_2023
-    measure_df['G'] = 0
-    for pathway in NP_PATHWAYS:
-        measure_df['G'] = measure_df['G'] + (
-                measure_df[f'mean_identified_as_{pathway}'] * measure_df[f'mean_identified_as_{pathway}'])
-    measure_df['G'] = 1 - measure_df['G']
+    simpson = 1 - (mean_vals ** 2).sum(axis=1)
+    measure_df['G'] = simpson
 
-    measure_df['number_of_apparent_categories'] = 0
-    for pathway in NP_PATHWAYS:
-        measure_df[f'binary_identified_as_{pathway}'] = 0
-        measure_df.loc[measure_df[f'identified_{pathway}_count'] > 0, f'binary_identified_as_{pathway}'] = 1
-        measure_df['number_of_apparent_categories'] = measure_df['number_of_apparent_categories'] + measure_df[
-            f'binary_identified_as_{pathway}']
+    bin_identified = (measure_df[count_cols] > 0).astype(int)
+    measure_df['number_of_apparent_categories'] = bin_identified.sum(axis=1)
 
     ## Pielou index measures evenness of the classes
     ## It normalises H by the 'richness' for the given genus, i.e. the number of different pathways present

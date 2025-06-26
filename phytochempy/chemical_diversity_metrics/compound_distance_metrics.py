@@ -78,39 +78,32 @@ def calculate_FAD_measures(df: pd.DataFrame, compound_grouping: str):
 
     df = remove_groups_with_single_compounds(df, compound_grouping)
 
-    FAD_outputs = {}
-    MFAD_outputs = {}
-    APWD_outputs = {}
-    N_outputs = {}
-    for taxon in df[compound_grouping].unique():
-        taxon_data = df[df[compound_grouping] == taxon]
-        if len(taxon_data) > 1:
-            distances = _get_pairwise_distances_from_data(taxon_data)
-            FAD = distances.sum() * 2
-            FAD_outputs[taxon] = FAD
+    groups = df.groupby(compound_grouping)
+    results = []
 
-            N = len(taxon_data)
+    for taxon, taxon_data in groups:
+        N = len(taxon_data)
+        if N < 2:
+            raise ValueError(
+                f'Measures for taxa with single compounds are poorly defined. '
+                f'In this case for taxon "{taxon}", '
+                f'either remove these from your data, or make a pull request :)'
+            )
+        distances = _get_pairwise_distances_from_data(taxon_data)
+        FAD = distances.sum() * 2
+        num_distances = len(distances) * 2
+        assert num_distances == N ** 2 - N
+        MFAD = FAD / N
+        APWD = FAD / num_distances
 
-            number_of_distances = len(distances)*2
-            assert number_of_distances == N ** 2 - N
+        results.append({
+            compound_grouping: taxon,
+            'FAD': FAD,
+            'MFAD': MFAD,
+            'APWD': APWD,
+            'GroupSize_FAD': N
+        })
 
-            MFAD_outputs[taxon] = FAD / N
+    out_df = pd.DataFrame(results)
 
-            APWD_outputs[taxon] = FAD / number_of_distances
-            N_outputs[taxon] = N
-        else:
-            # FAD_outputs[taxon] = 0
-            # MFAD_outputs[taxon] = 0
-            # APWD_outputs[taxon] = 0
-            # N_outputs[taxon] = len(taxon_data)
-            raise ValueError(f'Measures for taxa with single compounds are poorly defined. In this case for taxon "{taxon}",'
-                             f'Either remove these from your data, or make a pull request :)')
-
-    out_df = pd.DataFrame.from_dict(FAD_outputs, orient='index', columns=['FAD'])
-
-    out_df['MFAD'] = MFAD_outputs.values()
-    out_df['APWD'] = APWD_outputs.values()
-    out_df['GroupSize_FAD'] = N_outputs.values()  # The size of the compound groups used in these calculations.
-
-    out_df = out_df.reset_index(names=[compound_grouping])
     return out_df
