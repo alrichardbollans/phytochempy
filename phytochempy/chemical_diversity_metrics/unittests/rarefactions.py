@@ -59,6 +59,31 @@ class MyTestCase(unittest.TestCase):
         assert len(pathway_all_groups) == 2
         print(fad_all_groups)
 
+        baseline_fad_measures  = calculate_FAD_measures(self.df, 'Groups')
+        assert len(baseline_fad_measures) == 2
+
+        for g in baseline_fad_measures['Groups'].values:
+            for m in ['FAD', 'MFAD', 'APWD']:
+                apwd = baseline_fad_measures[baseline_fad_measures['Groups'] == g][m].iloc[0]
+
+                rare_apwd = fad_all_groups[fad_all_groups['Groups'] == g][f'{m}_Rare'].iloc[0]
+                if m == 'APWD':
+                    assert apwd < rare_apwd * 1.1
+                    assert apwd > rare_apwd * 0.9
+                else:
+                    assert rare_apwd <= apwd
+
+        baseline_pathway_measures = get_pathway_based_diversity_measures(self.df, 'Groups','Standard_SMILES')
+        for g in baseline_pathway_measures['Groups'].values:
+            for m in ['H', 'Hbc', 'G', 'J']:
+                apwd = baseline_pathway_measures[baseline_pathway_measures['Groups'] == g][m].iloc[0]
+                rare_apwd = pathway_all_groups[pathway_all_groups['Groups'] == g][f'{m}_Rare'].iloc[0]
+                if m == 'J':
+                    assert apwd < rare_apwd * 1.1
+                    assert apwd > rare_apwd * 0.9
+                else:
+                    assert rare_apwd <= apwd
+
 
 if __name__ == '__main__':
     unittest.main()
