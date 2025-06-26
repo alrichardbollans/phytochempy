@@ -1,5 +1,7 @@
 import pandas as pd
+from rdkit.Chem import rdFingerprintGenerator
 
+_mfpgen = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
 
 def _get_pairwise_distances_from_data(df: pd.DataFrame):
     """
@@ -29,8 +31,9 @@ def _get_pairwise_distances_from_data(df: pd.DataFrame):
     PandasTools.AddMoleculeColumnToFrame(df, 'Standard_SMILES', 'Molecule', includeFingerprints=True)
     df = df.dropna(subset=['Molecule'])[['Molecule', 'Standard_SMILES']]
 
+
     # Produce a hashed Morgan fingerprint for each molecule
-    df['morgan_fingerprint'] = df['Molecule'].apply(lambda x: GetMorganFingerprintAsBitVect(x, 2))
+    df['morgan_fingerprint'] = df['Molecule'].apply(lambda x: _mfpgen.GetFingerprint(x))
     distmat = GetTanimotoDistMat(df['morgan_fingerprint'].values)
 
     return distmat
