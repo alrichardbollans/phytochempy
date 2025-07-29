@@ -1,4 +1,5 @@
 import multiprocessing
+import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import pandas as pd
@@ -46,6 +47,9 @@ def rarefy_diversity_for_group(df: pd.DataFrame, compound_grouping: str, group: 
 
 def _process_group(args):
     (df, compound_grouping, group, target_size, iterations, compound_id_col) = args
+    start_time = time.time()
+    print(f'doing group: {group}')
+
     fad_means, fad_stds = rarefy_diversity_for_group(df, compound_grouping, group, target_size, ['FAD', 'MFAD', 'APWD'], calculate_FAD_measures,
                                                      iterations=iterations)
     group_df = pd.DataFrame(fad_means, index=[group])
@@ -54,6 +58,7 @@ def _process_group(args):
                                                              get_pathway_based_diversity_measures,
                                                              iterations=iterations, compound_id_col=compound_id_col)
     pathway_group_df = pd.DataFrame(pathway_means, index=[group])
+    print(f'group: {group} took {time.time() - start_time} seconds')
     return (group_df, pathway_group_df)
 
 
