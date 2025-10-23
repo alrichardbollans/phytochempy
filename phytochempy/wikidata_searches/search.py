@@ -11,13 +11,38 @@ from phytochempy.compound_properties import COMPOUND_NAME_COLUMN
 def generate_wikidata_search_query(taxon_id: str, limit: int, language: str = 'en') -> str:
     '''Input used query to search all compounds in given taxon: https://query.wikidata.org.
     Example `generate_wikidata_search_query('Q1073514', 10)` will return 10 compounds in Ophiorrhiza
+
+    For code related to DOI, see https://stackoverflow.com/questions/79796872/extracting-dois-from-wikidata-entries-via-wikidata-query-service/79796975#79796975
+
     '''
-    query_string = (f'SELECT DISTINCT ?structure ?structureLabel ?structure_smiles ?structure_cas ?structure_inchikey ?organism ?organism_name '
-                    f'?ipniID ?chembl_id WHERE {{VALUES ?taxon {{ wd:{taxon_id}}}?organism (wdt:P171*) ?taxon;'
-                    f'wdt:P225 ?organism_name.?structure (p:P703/ps:P703) ?organism. OPTIONAL {{?structure wdt:P235 '
-                    f'?structure_inchikey.}}OPTIONAL {{?structure wdt:P233 ?structure_smiles.}}OPTIONAL {{?structure wdt:P231 '
-                    f'?structure_cas.}}OPTIONAL {{?organism wdt:P961 ?ipniID.}}OPTIONAL {{?structure wdt:P592 ?chembl_id.}}      '
-                    f'SERVICE wikibase:label {{bd:serviceParam wikibase:language "{language}".}}}}    LIMIT {str(limit)}')
+    query_string = (f'''
+        SELECT DISTINCT ?structure ?structureLabel ?structure_smiles ?structure_cas ?structure_inchikey
+                        ?organism ?organism_name ?ipniID ?chembl_id
+                        ?refDOI
+        WHERE {{
+            VALUES ?taxon {{ wd:{taxon_id} }}
+            ?organism (wdt:P171*) ?taxon;
+                     wdt:P225 ?organism_name.
+            ?structure p:P703 ?occurrenceStatement.
+            ?occurrenceStatement ps:P703 ?organism.
+            OPTIONAL {{ ?structure wdt:P235 ?structure_inchikey. }}
+            OPTIONAL {{ ?structure wdt:P233 ?structure_smiles. }}
+            OPTIONAL {{ ?structure wdt:P231 ?structure_cas. }}
+            OPTIONAL {{ ?organism wdt:P961 ?ipniID. }}
+            OPTIONAL {{ ?structure wdt:P592 ?chembl_id. }}
+            OPTIONAL {{
+                ?occurrenceStatement prov:wasDerivedFrom ?refNode.
+                OPTIONAL {{
+                    ?refNode pr:P248 ?refSource.          # stated in (work, as Q-ID)
+                    OPTIONAL {{ ?refSource wdt:P356 ?refDOI. }}  # DOI of the publication
+                    # Federate to Scholarly Wikidata for DOI
+                    OPTIONAL {{SERVICE wdsubgraph:scholarly_articles{{ ?refSource wdt:P356 ?refDOI. }}}}
+                }}
+            }}
+            SERVICE wikibase:label {{ bd:serviceParam wikibase:language "{language}". }}
+        }}
+        LIMIT {str(limit)}
+        ''').strip()
     print(query_string)
     return query_string
 

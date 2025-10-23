@@ -9,3 +9,4 @@ CIRpy
 rdkit
 standardiser
 setuptools
+beautifulsoup4
