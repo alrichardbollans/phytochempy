@@ -36,7 +36,7 @@ class TestTidyWikidataOutput(unittest.TestCase):
 
 class TestGettingID(unittest.TestCase):
     def test_examples(self):
-        examples = {'Google': ['Q95', 'Q961680', 'Q110997421', 'Q125851407'], 'Pandanaceae': ['Q736182'], 'Gentianales': ['Q21754']}
+        examples = {'Google': [], 'Pandanaceae': ['Q736182'], 'Gentianales': ['Q21754'], 'Cactaceae':['Q14560']}
         for e in examples:
             self.assertEqual(get_wikidata_id_for_taxon(e), examples[e])
 

@@ -152,7 +152,8 @@ def get_wikidata_id_for_taxon(taxon: str, language: str = 'en'):
     This method retrieves the Wikidata ID(s) for a given taxon name and language using the Wikidata SPARQL endpoint.
     Not currently implemented in the pipeline as there is ambiguity.
     """
-    query_string = "SELECT ?item WHERE { ?item rdfs:label '" + taxon + "'@" + language + " }"
+    query_string = "SELECT ?item WHERE { ?item rdfs:label '" + taxon + "'@" + language + ".  ?item wdt:P31 wd:Q16521.}"
+    print(query_string)
     time.sleep(5)  # Rate limiting
     # Define the SPARQL endpoint URL
     endpoint_url = "https://query.wikidata.org/sparql"
