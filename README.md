@@ -108,4 +108,4 @@ RDKit: Open-source cheminformatics. https://www.rdkit.org
 
 #### Diversity Measures
 
-See publication --- 
+See publication --- [Beyond phylogeny: phytochemical diversity as a unique metric for biodiversity in the Gentianales](https://nph.onlinelibrary.wiley.com/doi/10.1111/nph.70653)
