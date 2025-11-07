@@ -1,6 +1,8 @@
 ## phytochempy
 
-A python package to download and enrich phytochemical data 
+A python package to download and enrich phytochemical data.
+
+If you find this package useful, please cite the paper: [Beyond phylogeny: phytochemical diversity as a unique metric for biodiversity in the Gentianales](https://nph.onlinelibrary.wiley.com/doi/10.1111/nph.70653), along with any of the relevant references for data sources described below.
 
 ## Installation
 
@@ -106,4 +108,4 @@ RDKit: Open-source cheminformatics. https://www.rdkit.org
 
 #### Diversity Measures
 
-See publication --- 
+See publication --- [Beyond phylogeny: phytochemical diversity as a unique metric for biodiversity in the Gentianales](https://nph.onlinelibrary.wiley.com/doi/10.1111/nph.70653)
