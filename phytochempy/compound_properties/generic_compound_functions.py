@@ -128,9 +128,9 @@ def get_smiles_and_inchi_from_cas_ids(cas_ids: List[str], tempout_dir: str = Non
         ent_df = pd.DataFrame(result, index=[0])
         out_df = pd.concat([out_df, ent_df])
 
-                if tempout_dir is not None:
-                    if len(out_df.index) > 0:
-                        out_df.to_csv(cache_csv)
+        if tempout_dir is not None:
+            if len(out_df.index) > 0:
+                out_df.to_csv(cache_csv)
     if existing_df is not None:
         out_df = pd.concat([out_df, existing_df])
     out_df = out_df.sort_values(by='CAS ID')
