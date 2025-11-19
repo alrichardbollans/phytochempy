@@ -1,9 +1,8 @@
 import os
+import pathlib
 import re
-import urllib
 import uuid
 from typing import List
-from urllib.error import HTTPError
 
 import cirpy
 import numpy as np
@@ -70,12 +69,10 @@ def resolve_cas_to_smiles(cas_id: str):
     :return: A string representing the SMILES representation of the given CAS ID.
 
     """
-    try:
-        out = cirpy.resolve(cas_id, 'smiles')
-    except (urllib.error.HTTPError, urllib.error.URLError):
+
+    out = cirpy.resolve(cas_id, 'smiles')
+    if out is None:
         out = np.nan
-        if cas_id == cas_id and cas_id != '':
-            print(f'WARNING: cas id not resolved: {cas_id}')
     return out
 
 
@@ -86,16 +83,12 @@ def resolve_cas_to_inchikey(cas_id: str):
     :param cas_id: The CAS ID to resolve.
     :return: The resolved InChIKey or np.nan if not found.
     """
-    try:
-        inch = cirpy.resolve(cas_id, 'stdinchikey')
-        if inch is not None:
-            out = inch.replace('InChIKey=', '')
-        else:
-            out = np.nan
-    except (urllib.error.HTTPError, urllib.error.URLError):
+
+    inch = cirpy.resolve(cas_id, 'stdinchikey')
+    if inch is not None:
+        out = inch.replace('InChIKey=', '')
+    else:
         out = np.nan
-        if cas_id == cas_id and cas_id != '':
-            print(f'WARNING: cas id not resolved: {cas_id}')
     return out
 
 
@@ -131,11 +124,9 @@ def get_smiles_and_inchi_from_cas_ids(cas_ids: List[str], tempout_dir: str = Non
     for c_id in tqdm(unique_cas_ids, desc='Resolving CAS IDs..'):
         smiles_result = resolve_cas_to_smiles(c_id)
         inch_result = resolve_cas_to_inchikey(c_id)
-        if smiles_result is not None or inch_result is not None:
-            if smiles_result == smiles_result and inch_result == inch_result:
-                result = {'CAS ID': c_id, 'SMILES': smiles_result, 'InChIKey': inch_result}
-                ent_df = pd.DataFrame(result, index=[0])
-                out_df = pd.concat([out_df, ent_df])
+        result = {'CAS ID': c_id, 'SMILES': smiles_result, 'InChIKey': inch_result}
+        ent_df = pd.DataFrame(result, index=[0])
+        out_df = pd.concat([out_df, ent_df])
 
     if tempout_dir is not None:
         if len(out_df.index) > 0:
@@ -157,6 +148,7 @@ def add_CAS_ID_translations_to_df(df: pd.DataFrame, cas_id_col: str, tempout_dir
     This method takes a DataFrame and adds CAS ID translations to it. The translations are obtained by calling the 'get_smiles_and_inchi_from_cas_ids' method.
 
     """
+    pathlib.Path(tempout_dir).mkdir(parents=True, exist_ok=True)
     _info = get_smiles_and_inchi_from_cas_ids(df[cas_id_col].dropna(), tempout_dir)
 
     _info[[cas_id_col, 'SMILES', 'InChIKey']].drop_duplicates(keep='first').dropna(subset=cas_id_col)
