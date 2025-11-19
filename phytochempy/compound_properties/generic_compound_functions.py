@@ -118,7 +118,7 @@ def get_smiles_and_inchi_from_cas_ids(cas_ids: List[str], tempout_dir: str = Non
                 c = unique_cas_ids.count(alread_known)
                 for i in range(c):
                     unique_cas_ids.remove(alread_known)
-
+    cache_csv = os.path.join(tempout_dir, temp_file_tag + str(uuid.uuid4()) + '.csv')
     out_df = pd.DataFrame()
 
     for c_id in tqdm(unique_cas_ids, desc='Resolving CAS IDs..'):
@@ -128,11 +128,11 @@ def get_smiles_and_inchi_from_cas_ids(cas_ids: List[str], tempout_dir: str = Non
         ent_df = pd.DataFrame(result, index=[0])
         out_df = pd.concat([out_df, ent_df])
 
-    if tempout_dir is not None:
-        if len(out_df.index) > 0:
-            out_df.to_csv(os.path.join(tempout_dir, temp_file_tag + str(uuid.uuid4()) + '.csv'))
-        if existing_df is not None:
-            out_df = pd.concat([out_df, existing_df])
+                if tempout_dir is not None:
+                    if len(out_df.index) > 0:
+                        out_df.to_csv(cache_csv)
+    if existing_df is not None:
+        out_df = pd.concat([out_df, existing_df])
     out_df = out_df.sort_values(by='CAS ID')
     out_df = out_df.reset_index(drop=True)
     return out_df
