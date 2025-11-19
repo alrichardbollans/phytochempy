@@ -1,12 +1,14 @@
 import os
 import pathlib
 import re
+import time
 import uuid
 from typing import List
 
 import cirpy
 import numpy as np
 import pandas as pd
+import requests
 from rdkit import Chem
 from rdkit.Chem.MolStandardize import rdMolStandardize
 from standardiser import standardise
@@ -72,7 +74,7 @@ def resolve_cas_to_smiles(cas_id: str):
 
     out = cirpy.resolve(cas_id, 'smiles')
     if out is None:
-        out = np.nan
+        out = None
     return out
 
 
@@ -88,7 +90,7 @@ def resolve_cas_to_inchikey(cas_id: str):
     if inch is not None:
         out = inch.replace('InChIKey=', '')
     else:
-        out = np.nan
+        out = None
     return out
 
 
@@ -99,6 +101,8 @@ def get_smiles_and_inchi_from_cas_ids(cas_ids: List[str], tempout_dir: str = Non
     :return: A pandas DataFrame containing CAS ID, SMILES, and InChIKey for each CAS ID in the input list.
 
     """
+    print(f'Warning this method predominantly relies on CAS ID translations based on the Knapsack database.'
+          f'This is likely appropriate for data downloaded from Knapsack but may not be ideal for other sources. ')
     unique_cas_ids = list(set(cas_ids))
 
     # First save time by reading previous temp outputs
@@ -122,8 +126,11 @@ def get_smiles_and_inchi_from_cas_ids(cas_ids: List[str], tempout_dir: str = Non
     out_df = pd.DataFrame()
 
     for c_id in tqdm(unique_cas_ids, desc='Resolving CAS IDs..'):
-        smiles_result = resolve_cas_to_smiles(c_id)
-        inch_result = resolve_cas_to_inchikey(c_id)
+        smiles_result, inch_result = get_compound_ids_from_CAS_ID_from_knapsack(c_id)
+        if smiles_result is None:
+            smiles_result = resolve_cas_to_smiles(c_id)
+        if inch_result is None:
+            inch_result = resolve_cas_to_inchikey(c_id)
         result = {'CAS ID': c_id, 'SMILES': smiles_result, 'InChIKey': inch_result}
         ent_df = pd.DataFrame(result, index=[0])
         out_df = pd.concat([out_df, ent_df])
@@ -282,3 +289,55 @@ def fill_match_ids(df: pd.DataFrame, given_col: str) -> pd.DataFrame:
                 df.at[index, given_col] = v
 
     return df
+
+
+def get_compound_ids_from_CAS_ID_from_knapsack(cas_id: str):
+    """
+    Fetches compound identifiers (InChIKey and SMILES) associated with a given CAS ID from the Knapsack database.
+
+    This function constructs a URL to query the Knapsack database with a specified CAS ID. It retrieves
+    data in the form of HTML tables, parses them, and extracts the relevant compound information such as
+    InChIKey and SMILES. The function is robust to cases where the underlying web structure may have
+    encoding issues and handles such scenarios appropriately.
+
+    Raises an IndexError if the expected data structure is not present in the HTML content or the
+    specific compound information cannot be found.
+
+    Parameters:
+    cas_id: str
+        The CAS ID of the compound for which the InChIKey and SMILES need to be fetched.
+
+    Returns:
+    tuple[str | None, str | None]
+        A tuple containing:
+        - The InChIKey of the compound, or None if not available.
+        - The SMILES of the compound, or None if not available.
+    """
+    if cas_id == '' or cas_id is None:
+        return None, None
+    url = f'http://www.knapsackfamily.com/knapsack_core/information.php?sname=CAS_ID&word={cas_id}'
+    time.sleep(.01)
+    try:
+
+        tables = pd.read_html(url, flavor='html5lib')
+
+    except UnicodeEncodeError:
+        response = requests.get(url)
+        decoded = response.content.decode()
+        tables = pd.read_html(decoded, flavor='html5lib')
+
+    except ValueError:
+        return None, None
+    meta_table = tables[0]
+
+    inchikey_df = meta_table[meta_table['Metabolite Information'] == 'InChIKey']
+    try:
+        inchikey = inchikey_df['Structural formula'].values[0]
+    except IndexError:
+        inchikey = None
+    smiles_df = meta_table[meta_table['Metabolite Information'] == 'SMILES']
+    try:
+        smiles = smiles_df['Structural formula'].values[0]
+    except IndexError:
+        smiles = None
+    return inchikey, smiles

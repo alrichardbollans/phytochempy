@@ -74,7 +74,6 @@ def get_knapsack_compounds_in_family(family: str, temp_output_csv: str):
             print(e)
             failed_genera.append(genus)
 
-
     if len(failed_genera) > 0:
         print('WARNING: Searching for the following genera raised an error and should be manually checked:')
         print(failed_genera)
@@ -84,7 +83,8 @@ def get_knapsack_compounds_in_family(family: str, temp_output_csv: str):
     all_genera_df.to_csv(temp_output_csv)
 
 
-def tidy_knapsack_results(knapsack_results_csv: str, output_csv: str, family: str, cirpy_cache_dir: str = None, manual_resolution_csv: str = None,
+def tidy_knapsack_results(knapsack_results_csv: str, output_csv: str, family: str, cirpy_cache_dir: str = None,
+                          manual_resolution_csv: str = None,
                           wcvp_version_number: str = None, add_smiles_and_inchi: bool = True):
     """
     :param cirpy_cache_dir: Temp directory for cirpy caches
@@ -101,7 +101,8 @@ def tidy_knapsack_results(knapsack_results_csv: str, output_csv: str, family: st
 
     if not os.path.isdir(os.path.dirname(output_csv)) and os.path.dirname(output_csv) != '':
         os.mkdir(os.path.dirname(output_csv))
-    acc_df = get_accepted_info_from_names_in_column(all_genera_df, _KNAPSACK_organism_column, wcvp_version=wcvp_version_number,
+    acc_df = get_accepted_info_from_names_in_column(all_genera_df, _KNAPSACK_organism_column,
+                                                    wcvp_version=wcvp_version_number,
                                                     manual_resolution_csv=manual_resolution_csv)
     acc_df = acc_df[acc_df[wcvp_accepted_columns['family']] == family]
     if add_smiles_and_inchi:
@@ -138,7 +139,8 @@ def get_knapsack_formulas_for_compound(metabolite: str):
         return []
 
 
-def get_knapsack_data(families_of_interest: list, temp_output_path: str, tidied_output_csv: str, add_smiles_and_inchi: bool = True):
+def get_knapsack_data(families_of_interest: list, temp_output_path: str, tidied_output_csv: str,
+                      add_smiles_and_inchi: bool = True):
     """
     Retrieves Knapsack data for specified families of interest and saves it to a tidied output CSV file.
 
@@ -148,7 +150,7 @@ def get_knapsack_data(families_of_interest: list, temp_output_path: str, tidied_
     :param add_smiles_and_inchi: Optional. Specifies whether to add SMILES and InChI information to the tidied output. Defaults to True.
     :return: None
     """
-    import html5lib # Add this requirement here as its a common error
+    import html5lib  # Add this requirement here as its a common error
     def _temp_out_for_fam(faml: str) -> str:
         return os.path.join(temp_output_path, faml + '_kn_search.csv')
 
