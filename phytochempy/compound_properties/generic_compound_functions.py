@@ -126,7 +126,7 @@ def get_smiles_and_inchi_from_cas_ids(cas_ids: List[str], tempout_dir: str = Non
     out_df = pd.DataFrame()
 
     for c_id in tqdm(unique_cas_ids, desc='Resolving CAS IDs..'):
-        smiles_result, inch_result = get_compound_ids_from_CAS_ID_from_knapsack(c_id)
+        inch_result, smiles_result = get_compound_ids_from_CAS_ID_from_knapsack(c_id)
         if smiles_result is None:
             smiles_result = resolve_cas_to_smiles(c_id)
         if inch_result is None:
