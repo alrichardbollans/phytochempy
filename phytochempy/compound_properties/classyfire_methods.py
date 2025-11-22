@@ -55,12 +55,8 @@ def get_classyfire_classes_from_smiles(smiles: List[str], classyfire_cache_dir: 
         if len(existing_info) > 0:
             existing_df = pd.concat(existing_info)
 
-            already_known_smiles = existing_df['original_SMILES'].tolist()
-            # remove the item for all its occurrences
-            for alread_known in already_known_smiles:
-                c = unique_smiles.count(alread_known)
-                for i in range(c):
-                    unique_smiles.remove(alread_known)
+            already_known_smiles = set(existing_df['npSMILES'].tolist())
+            unique_smiles = [s for s in unique_smiles if s not in already_known_smiles]
 
     fields_to_collect = ['kingdom', 'superclass', 'class', 'subclass', 'direct_parent']
     out_df = pd.DataFrame()

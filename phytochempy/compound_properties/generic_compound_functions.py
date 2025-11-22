@@ -116,12 +116,8 @@ def get_smiles_and_inchi_from_cas_ids(cas_ids: List[str], tempout_dir: str = Non
         if len(existing_info) > 0:
             existing_df = pd.concat(existing_info)
 
-            already_known_cas_ids = existing_df['CAS ID'].tolist()
-            # remove the item for all its occurrences
-            for alread_known in already_known_cas_ids:
-                c = unique_cas_ids.count(alread_known)
-                for i in range(c):
-                    unique_cas_ids.remove(alread_known)
+            already_known_cas_ids = set(existing_df['CAS ID'].tolist())
+            unique_cas_ids = [s for s in unique_cas_ids if s not in already_known_cas_ids]
     cache_csv = os.path.join(tempout_dir, temp_file_tag + str(uuid.uuid4()) + '.csv')
     out_df = pd.DataFrame()
 
