@@ -10,7 +10,7 @@ This library requires `wcvpy>=1.3.2`, to install see https://github.com/alrichar
 
 To install phytochempy with pip, run:
 
-`pip install git+https://github.com/alrichardbollans/phytochempy.git@1.0`
+`pip install git+https://github.com/alrichardbollans/phytochempy.git@1.1`
 
 When using this package, please cite the appropriate data sources. These are detailed in References below.
 

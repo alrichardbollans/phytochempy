@@ -43,7 +43,6 @@ def generate_wikidata_search_query(taxon_id: str, limit: int, language: str = 'e
         }}
         LIMIT {str(limit)}
         ''').strip()
-    print(query_string)
     return query_string
 
 
