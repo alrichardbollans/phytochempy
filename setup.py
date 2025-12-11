@@ -11,7 +11,7 @@ setup(
         'tqdm',
         'rdkit',
         'standardiser',
-        'wcvpy>=1.3.2'
+        'wcvpy>=1.3.4'
     ],
     extras_require={'knapsack': ["html5lib", 'beautifulsoup4', 'cirpy'],
                     'compound_metrics': ['rdkit', 'chembl_webresource_client'],
