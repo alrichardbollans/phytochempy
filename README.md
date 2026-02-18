@@ -6,11 +6,11 @@ If you find this package useful, please cite the paper: [Beyond phylogeny: phyto
 
 ## Installation
 
-This library requires `wcvpy>=1.3.4`, to install see https://github.com/alrichardbollans/wcvpy
+This library requires `wcvpy>=1.3.6`, to install see https://github.com/alrichardbollans/wcvpy
 
 To install phytochempy with pip, run:
 
-`pip install git+https://github.com/alrichardbollans/phytochempy.git@1.1`
+`pip install git+https://github.com/alrichardbollans/phytochempy.git@1.1.1`
 
 When using this package, please cite the appropriate data sources. These are detailed in References below.
 

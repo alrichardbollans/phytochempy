@@ -1,13 +1,18 @@
 import os
+import sys
 
 import pandas as pd
 import numpy as np
-from pkg_resources import resource_filename
 from tqdm import tqdm
 
 from phytochempy.compound_properties import simplify_inchi_key, sanitize_filename
 
-_input_path = resource_filename(__name__, 'inputs')
+if sys.version_info >= (3, 9):
+    from importlib.resources import files
+else:
+    from importlib_resources import files
+
+_input_path = str(files(__name__).joinpath('inputs'))
 chembl_apm_assay_info_csv = os.path.join(_input_path, 'chembl_apm_assay_info.csv')
 
 

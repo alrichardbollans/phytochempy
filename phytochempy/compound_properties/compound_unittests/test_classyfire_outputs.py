@@ -1,13 +1,18 @@
 import os.path
+import sys
 import unittest
 
 import pandas as pd
-from pkg_resources import resource_filename
 
 from phytochempy.compound_properties import get_classyfire_classes_from_smiles, get_classyfire_classes_from_df
 
-input_test_dir = resource_filename(__name__, 'test_inputs')
-test_output_dir = resource_filename(__name__, 'test_outputs')
+if sys.version_info >= (3, 9):
+    from importlib.resources import files
+else:
+    from importlib_resources import files
+
+input_test_dir = str(files(__name__).joinpath('test_inputs'))
+test_output_dir = str(files(__name__).joinpath('test_outputs'))
 
 
 class MyTestCase(unittest.TestCase):

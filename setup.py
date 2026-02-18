@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='phytochempy',
-    version='1.1',
+    version='1.1.1',
     packages=find_packages(),
     package_data={"phytochempy": ["compound_properties/inputs/*"]},
     install_requires=[
@@ -11,7 +11,7 @@ setup(
         'tqdm',
         'rdkit',
         'standardiser',
-        'wcvpy>=1.3.4'
+        'wcvpy>=1.3.6'
     ],
     extras_require={'knapsack': ["html5lib", 'beautifulsoup4', 'cirpy'],
                     'compound_metrics': ['rdkit', 'chembl_webresource_client'],

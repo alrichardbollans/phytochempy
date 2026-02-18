@@ -1,8 +1,8 @@
 import os.path
+import sys
 import unittest
 
 import pandas as pd
-from pkg_resources import resource_filename
 from tqdm import tqdm
 from wcvpy.wcvp_download import wcvp_accepted_columns, get_all_taxa
 from wcvpy.wcvp_name_matching import get_accepted_info_from_names_in_column
@@ -10,8 +10,13 @@ from wcvpy.wcvp_name_matching import get_accepted_info_from_names_in_column
 from phytochempy.compound_properties import COMPOUND_NAME_COLUMN
 from phytochempy.knapsack_searches import get_knapsack_formulas_for_compound, get_knapsack_compounds_for_taxon
 
-input_test_dir = resource_filename(__name__, 'test_inputs')
-test_output_dir = resource_filename(__name__, 'test_outputs')
+if sys.version_info >= (3, 9):
+    from importlib.resources import files
+else:
+    from importlib_resources import files
+
+input_test_dir = str(files(__name__).joinpath('test_inputs'))
+test_output_dir = str(files(__name__).joinpath('test_outputs'))
 
 
 class SpecificTaxa(unittest.TestCase):
