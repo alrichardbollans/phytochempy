@@ -1,10 +1,18 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-- family-names: Richard-Bollans
-  given-names: Adam
-  orcid: "https://orcid.org/0000-0003-1980-0107"
-title: "phytochempy"
-url: "https://github.com/alrichardbollans/phytochempy"
-doi: 10.5281/zenodo.14774374
-date-released: 2026
+      - family-names: Richard-Bollans
+        given-names: Adam
+      - family-names: Jan-Smith
+        given-names: Eliot
+      - family-names: Silvestro
+        given-names: Daniele
+      - family-names: Howes
+        given-names: Melanie-Jayne R
+
+title: "Beyond phylogeny: phytochemical diversity as a unique metric for biodiversity in the Gentianales"
+url: "https://nph.onlinelibrary.wiley.com/doi/10.1111/nph.70653"
+doi: 10.1111/nph.70653
+date-released: 2025
+issue: 6
+volume: 248
